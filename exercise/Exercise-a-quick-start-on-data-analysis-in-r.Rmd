@@ -120,7 +120,7 @@ var_matrix <- matrix(seq(1:6), nrow=3) # 请勿修改此行代码
 ```
 
 ### 1.6 总体均值及标准误的推断
-bootstrap抽样是有放回的重抽样方式，可以用于统计推断。以总体均值和标准误的推断为例，具体操作为，在每一轮bootstrap抽样中，从原始样本中**有放回地随机抽取**样本至<u>原有样本量大小</u>，组成新样本，计算该样本的样本均值，保存至向量中。经过k轮抽样，一共能生成k个样本均值数据，再基于生成的样本均值数据，计算均值即为总体均值，计算标准差即为标准误。请定义一个bootstrap_inference函数，使其能返回k轮bootstrap抽样后推断的总体均值及标准误。
+bootstrap抽样是有放回的重抽样方式，可以用于统计推断。以总体均值和标准误的推断为例，具体操作为，在每一轮bootstrap抽样中，从原始样本中**有放回地随机抽取**样本至<u>原有样本量大小</u>，组成新样本，计算该样本的样本均值，保存至向量中。经过k轮抽样，一共能生成k个样本均值数据，再基于生成的样本均值数据，计算均值即为总体均值，计算标准差即为标准误。请定义一个bootstrap_inference函数，使其能返回k轮bootstrap抽样后推断的总体BMI均值及标准误。
 
 ```{r 1-6-bootstrap-inference, exercise=TRUE}
 set.seed(1) # 请勿修改此行代码
@@ -139,6 +139,8 @@ bootstrap_inference <- function(){}
 
 ### 1.7 bootstrap抽样-索引值
 在建模过程中，遇到样本量较小的情况时，也可以采用bootstrap抽样方法扩充样本量。具体操作为，在每一轮bootstrap抽样中，从原始样本中**有放回地随机抽取**样本至<u>原有样本量大小</u>，组成*训练样本*进行建模，并将**未被抽到**的样本当做*验证样本*进行模型评价。其中就需要根据索引值确定训练样本与验证样本。请定义一个bootstrap_idx函数，使其能返回k轮bootstrap抽样生成的索引值列表。每个列表元素为一轮抽样的结果，该结果分别存储了训练样本与验证样本的索引值。
+
+![](https://github.com/LXHe/a-quick-start-on-data-analysis-in-r/exercise/img/chapter1-7.png "bs-index")
 
 ```{r 1-7-bootstrap-index, exercise=TRUE}
 set.seed(1) # 请勿修改此行代码
