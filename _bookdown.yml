@@ -1,0 +1,9 @@
+book_filename: "a-quick-start-on-data-analysis-in-r.Rmd"
+delete_merged_file: true
+language:
+  label:
+    fig: 'Figure '
+    tab: 'Table '
+    eq: 'Equation '
+  ui:
+    chapter_name: !expr function(i) paste0('第', i, '章')

@@ -1,0 +1,43 @@
+--- 
+title: "R数据分析入门"
+author: "Lingxiao HE"
+date: "`r Sys.Date()`"
+output: 
+  # pdf_document: default
+  html_document: default
+documentclass: book
+bibliography:
+- book.bib
+- packages.bib
+description: |
+  This is a textbook for a quick start on data analysis in R.
+link-citations: true
+site: bookdown::bookdown_site
+---
+
+# 本书说明{-}
+- 本教材旨在帮助大家快速入门R数据分析。通过学习本教材，希望您能：
+  - 阅读R代码
+  - 掌握基本的R代码编写
+  - 使用R读取和处理数据
+  - 使用R进行数据可视化
+  - 使用R进行常规的统计分析
+<br></br>
+
+- 在开始学习前，请先安装R与RStudio：
+  1. [R下载链接](https://cran.r-project.org/mirrors.html)：点击任意站点，进入后，选择下载与操作系统匹配的R软件。
+  ![](./img/r_software.png "R software")
+  
+  2. [RStudio下载链接](https://posit.co/download/rstudio-desktop/) 
+  <br></br>
+
+***注意***：编写R代码时，所有的代码符号均为英文标点符号
+
+[练习题链接](https://github.com/LXHe/a-quick-start-on-data-analysis-in-r/blob/main/exercise)
+
+```{r include=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'book.bib')
+```
