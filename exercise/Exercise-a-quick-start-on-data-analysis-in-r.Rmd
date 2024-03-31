@@ -122,6 +122,8 @@ var_matrix <- matrix(seq(1:6), nrow=3) # 请勿修改此行代码
 ### 1.6 总体均值及标准误的推断
 bootstrap抽样是有放回的重抽样方式，可以用于统计推断。以总体均值和标准误的推断为例，具体操作为，在每一轮bootstrap抽样中，从原始样本中**有放回地随机抽取**样本至<u>原有样本量大小</u>，组成新样本，计算该样本的样本均值，保存至向量中。经过k轮抽样，一共能生成k个样本均值数据，再基于生成的样本均值数据，计算均值即为总体均值，计算标准差即为标准误。请定义一个bootstrap_inference函数，使其能返回k轮bootstrap抽样后推断的总体BMI均值及标准误。
 
+![](https://github.com/LXHe/a-quick-start-on-data-analysis-in-r/blob/main/exercise/img/chapter1-6.png "bs-mean")
+
 ```{r 1-6-bootstrap-inference, exercise=TRUE}
 set.seed(1) # 请勿修改此行代码
 bmi_data <- rnorm(30, mean=22, sd=2) # 创建输入数据，请勿修改此行代码
@@ -140,7 +142,7 @@ bootstrap_inference <- function(){}
 ### 1.7 bootstrap抽样-索引值
 在建模过程中，遇到样本量较小的情况时，也可以采用bootstrap抽样方法扩充样本量。具体操作为，在每一轮bootstrap抽样中，从原始样本中**有放回地随机抽取**样本至<u>原有样本量大小</u>，组成*训练样本*进行建模，并将**未被抽到**的样本当做*验证样本*进行模型评价。其中就需要根据索引值确定训练样本与验证样本。请定义一个bootstrap_idx函数，使其能返回k轮bootstrap抽样生成的索引值列表。每个列表元素为一轮抽样的结果，该结果分别存储了训练样本与验证样本的索引值。
 
-![](https://github.com/LXHe/a-quick-start-on-data-analysis-in-r/exercise/img/chapter1-7.png "bs-index")
+![](https://github.com/LXHe/a-quick-start-on-data-analysis-in-r/blob/main/exercise/img/chapter1-7.png "bs-index")
 
 ```{r 1-7-bootstrap-index, exercise=TRUE}
 set.seed(1) # 请勿修改此行代码
@@ -155,4 +157,18 @@ bootstrap_idx <- function(){}
 
 ```{r 1-7-bootstrap-index-hint}
 "想想看如何处理重复值以及如何分别存储索引值"
+```
+
+## 第2章 数据读取与预处理
+### 2.1 excel文件读取
+在excel文件读取的章节中，我们学习了如何读取一个excel中的所有工作表。现在请将那部分代码改写成一个函数`multi_reader()`（包含“文件”以及“工作表”两个参数），使其能读取指定excel文件的指定工作表并返回一个列表，列表中的各个元素名称为对应的工作表名称。
+```{r 2-1-excel, exercise=TRUE}
+# 载入readxl包
+
+
+# 完成multi_reader()函数
+multi_reader <- function(){}
+
+# 使用multi_reader()函数读取goods.xlsx文件中2000年之后的所有工作表并返回一个列表
+# 注：2000年之后的工作表必须R自动查找完成，不能手动输入
 ```

@@ -194,7 +194,7 @@ na.omit(bmi) # 移除缺失值，同时显示缺失值的索引值
 
 ```{r chapter1-vector-na-process}
 mean(bmi) # 有缺失值时，函数在默认参数下不能工作
-mean(bmi, na.rm=TRUE) # 需要声明参数
+mean(bmi, na.rm=TRUE) # 移除缺失值之后计算均值
 
 bmi_impute <- bmi # 复制向量
 bmi_impute[is.na(bmi_impute)] <- mean(bmi_impute, na.rm=TRUE) # 对向量进行均值填补
@@ -219,7 +219,7 @@ cbind(var_matrix, var_matrix)
 rbind(var_matrix, var_matrix)
 ```
 
-矩阵的转置使用`t()`函数
+矩阵的转置使用`t()`函数, `t`指`transpose`。
 ```{r chapter1-matrix-transpose}
 t(var_matrix)
 ```
@@ -231,7 +231,8 @@ var_matrix[1,c(2,3)] # 提取第1行第2、3列的元素
 var_matrix[1,] # 提取第1行的所有元素
 var_matrix[,2] # 提取第2列的所有元素
 ```
-采用`dim()`函数获取矩阵的维度，`nrow()`函数获取矩阵的行数，`ncol()`函数获取矩阵的列数。
+
+采用`dim()`函数（`dim`指`dimension`）获取矩阵的维度，`nrow()`函数获取矩阵的行数，`ncol()`函数获取矩阵的列数。
 ```{r chapter1-matrix-dim}
 dim(var_matrix)
 nrow(var_matrix)
@@ -243,6 +244,7 @@ ncol(var_matrix)
 ```{r chapter1-dataframe-1}
 cbind(c("M","F"), var_matrix)
 ```
+
 如上所示，当加入字符型数据后，矩阵中的数字也被**强制转变**为字符型（即被双引号包裹），这被称为**隐式强制**。因此，使用**数据框(dataframe)**可以存储不同类型的数据，保留原有数据的完整性。
 ```{r chapter1-dataframe-2}
 data(iris) # 调用R自带数据框做为演示
@@ -250,6 +252,7 @@ class(iris) # 查看数据类型
 dim(iris) # 查看数据框维度
 str(iris) # 查看数据框内的变量类型
 ```
+
 ## 数组
 **数组（array）**是矩阵的扩展，可以将矩阵扩展至2维以上。1维数组相当于向量\@ref(chapter1-label-vector)，2维数组相当于矩阵\@ref(chapter1-label-matrix)。R中使用`array()`函数创建数组，主要的参数为：
 
@@ -277,12 +280,19 @@ length(test_vector)
 
 length(unlist(test_list)) # 使用`unlist()`函数将列表转变为向量
 ```
-`list()`元素的获取采用`[[]]`+索引值的方式，添加元素使用`append()`函数。
+`list()`元素的获取采用`[[]]`+索引值的方式，添加元素使用`append()`函数。如果列表的元素有名称，可以采用`$`调用。
 
 ***注意***：如果需要将**整个向量**添加进原有列表中，必须先将向量转为列表形式，否则R会将向量中的元素<u>逐个添加</u>为列表的元素。
 
 ```{r chapter1-list-retrieve}
 test_list[[1]] # 使用[[]]获取列表中的元素
+
+# 如果列表的元素有名称，可以采用`$`调用
+names(test_list) <- c("vec", "n", "mtx") # 给列表的元素命名
+test_list$vec # 使用"$+名称"调用列表元素
+```
+
+```{r chapter1-list-retrieve-2}
 append(test_list, list(c(FALSE, FALSE, TRUE))) # 整个添加向量
 append(test_list, c(FALSE, FALSE, TRUE)) # 逐个添加向量元素
 ```

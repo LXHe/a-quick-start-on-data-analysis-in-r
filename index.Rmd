@@ -24,9 +24,10 @@ site: bookdown::bookdown_site
   - 使用R进行常规的统计分析
 <br></br>
 
+## 软件准备
 - 在开始学习前，请先安装R与RStudio：
   1. [R下载链接](https://cran.r-project.org/mirrors.html)：点击任意站点，进入后，选择下载与操作系统匹配的R软件。
-  ![](./img/r_software.png "R software")
+  ![](./img/index-software.png "R software")
   
   2. [RStudio下载链接](https://posit.co/download/rstudio-desktop/) 
   <br></br>
@@ -34,6 +35,18 @@ site: bookdown::bookdown_site
 ***注意***：编写R代码时，所有的代码符号均为英文标点符号
 
 [练习题链接](https://github.com/LXHe/a-quick-start-on-data-analysis-in-r/blob/main/exercise)
+
+## R包的安装与调用
+R之所以广受欢迎，很大一个原因就是它拥有种类繁多的“包”以满足我们的多种需求。尽管R自带一些功能强大的“包”，但是我们在需要的时候还得额外安装“包”，否则，调用包就会报错。
+
+这时就需要用到`install.packages()`函数。例如，当我们需要安装`tidyverse`包时，可以输入`install.packages("tidyverse")`。
+![](./img/index-library.png "No library")
+
+我们如果需要使用某一个“包”，则需要在开始时使用`library()`函数调用它。例如，我们在安装完`readxl`包后，调用它时可以输入：`library(readxl)`。
+
+有时我们会在一个项目中调用多个包，而有些包里的函数会出现**重名**的情况，这时，后调用的“包”将覆盖先前加载“包”的功能。如果我们需要使用特定包的某个重名函数，可以输入`包::函数`。例如`tseries`和`chron`包都含有`is.weekend()`函数，如果要调用`chron`包的`is.weekend()`函数，则可以写成`chron::is.weekend()`。
+
+当我们不清楚某个“包”是否有安装，可以使用`if (!require(包)){install.packages("包")}`，这个代码的含义是，检查特定的包是否存在，如果不存在，将安装它。比如，检查`tidyverse`包是否存在，如果不存在则安装它，可以写成：`if (!require(tidyverse)){install.packages("tidyverse")}`
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages

@@ -42,3 +42,17 @@ while循环
 apply函数
 chapter1-label-matrix
 数组
+r-markdown
+including-plots
+数据读取与预处理
+数据读取
+r包的安装与调用
+csv文件读取
+excel文件读取
+软件准备
+index-library
+数据导入导出与预处理
+数据导入
+文件读取汇总
+数据导出
+路径
