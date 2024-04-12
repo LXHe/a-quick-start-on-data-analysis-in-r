@@ -9,11 +9,11 @@ output:
 R中变量的赋值采用`<-`(快捷键 "Alt"+"-")或者`=`完成，左侧为变量名称，右侧为赋值内容。
 变量命名时需要注意：
 
-- 变量名称可以由字母或者点号`.`开头且**只能是**字母、数字、下划线`_`和点号`.`的组合。
-- 变量名称对大小写敏感，所以在调用时需要区分大小写。
-- 当用点号 `.` 开头时，<u>第二个字符</u><font color="red">**不能**</font>是数字。
-- 变量名称<font color="red">**不能**</font>用数字或下划线`_`开头。
-- 预留变量或者函数名称(如`TRUE`，`FALSE`，`NULL`)不能用来命名。
+<li>变量名称可以由字母或者点号`.`开头且**只能是**字母、数字、下划线`_`和点号`.`的组合。</li>
+<li>变量名称对大小写敏感，所以在调用时需要区分大小写。</li>
+<li>当用点号 `.` 开头时，<u>第二个字符</u><font color="red">**不能**</font>是数字。</li>
+<li>变量名称<font color="red">**不能**</font>用数字或下划线`_`开头。</li>
+<li>预留变量或者函数名称(如`TRUE`，`FALSE`，`NULL`)不能用来命名。</li>
 
 ```{r chapter1-name}
 # 给数字赋值
@@ -54,6 +54,7 @@ as.logical(1) # 数字1为TRUE，0为FALSE
 
 ## 向量 {#chapter1-label-vector}
 **向量(vector)**是多个值（数字、字符或逻辑值）的组合。创建向量可以使用`c()`函数，`c`代表`concatenate`。
+
 ```{r chapter1-vector-mathScore}
 math_score <- c(60,75,87,99,22,44)
 print(math_score)
@@ -80,20 +81,20 @@ length(math_score)
 
 获取向量中的特定元素：
 
-- 当知道元素名称时，可以根据元素名称获取元素。
-- 有些向量并未给元素命名，此时也可以根据**索引(index)**获取元素。
+<li>当知道元素名称时，可以根据元素名称获取元素。</li>
+<li>有些向量并未给元素命名，此时也可以根据**索引(index)**获取元素。</li>
 
 ***注意***：
 
-- 元素的索引从1开始，直至最后一个元素(索引为向量的长度)。
-- 当需要获取多个元素时，可以使用`c()`函数或者使用索引**切片(slice)**。
-- 当需要获取<u>连续的</u>多个元素时，使用索引切片更为方便。
+<li>元素的索引从1开始，直至最后一个元素(索引为向量的长度)。</li>
+<li>当需要获取多个元素时，可以使用名称或者使用索引**切片(slice)**。</li>
+<li>当需要获取<u>连续的</u>多个元素时，使用索引切片更为方便。</li>
 
 ```{r chapter1-vector-retrieve}
 # 使用元素名称获取单个元素
 math_score["小赵"]
 
-# 使用c()函数获取多个元素
+# 使用名称获取多个元素，注意需要使用c()生成向量
 math_score[c("小赵","小李")]
 
 # 使用索引获取多个元素
@@ -113,18 +114,25 @@ math_score[length(math_score):3] # 逆序获取元素
 
 ```{r chapter1-vector-insertion}
 new_score <- c(55, 89)
-english_score_new <- append(english_score, new_score) # 未给定插入位置
-print(english_score_new)
+# 未给定插入位置
+english_score_new <- append(english_score, new_score) 
+english_score_new
 
-english_score_new2 <- append(english_score, new_score, 2) # 给定插入位置
-print(english_score_new2)
+# 给定插入位置
+english_score_new2 <- append(english_score, new_score, 2) 
+english_score_new2
 ```
 
 从向量移除元素可以使用 `-` 号。
 ```{r chapter1-vector-remove}
-print(english_score_new[-2]) # 从english_score_new向量移除第2个索引的元素
-print(english_score_new[-c(2:4)]) #从english_score_new向量移除第2至第4个索引的元素
-print(english_score_new[-c(2,5,7)]) #从english_score_new向量移除第2、5、7个索引的元素
+# 从english_score_new向量移除第2个索引的元素
+english_score_new[-2]
+
+#从english_score_new向量移除第2至第4个索引的元素
+english_score_new[-c(2:4)]
+
+#从english_score_new向量移除第2、5、7个索引的元素
+english_score_new[-c(2,5,7)]
 ```
 
 ### 按逻辑进行向量选择
@@ -143,38 +151,52 @@ R中的逻辑运算符：
 |\||或|
 
 ```{r chapter1-vector-logic}
+# 创建bmi向量
 bmi <- c(26.5, 22.4, NA, 25.5, 31, 27, 20, NA, 19.4, 23, 30)
-bmi[bmi<24] # 筛选BMI<24的元素
-bmi[bmi>28] # 筛选BMI>28的元素
-bmi[(bmi<=20)|(bmi>=30)] # 筛选BMI<=20或者>=30的元素
-bmi[bmi %in% c(26:30)] # 筛选BMI在向量(26,27,28,29,30)内的元素
-bmi[(bmi>=24)&(bmi<=30)] # 筛选BMI在[24,30]范围内的元素
+
+# 筛选BMI<24的元素
+bmi[bmi<24]
+
+# 筛选BMI>28的元素
+bmi[bmi>28] 
+
+# 筛选BMI<=20或者>=30的元素
+bmi[(bmi<=20)|(bmi>=30)] 
+
+# 筛选BMI在向量(26,27,28,29,30)内的元素
+bmi[bmi %in% c(26:30)] 
+
+# 筛选BMI在[24,30]范围内的元素
+bmi[(bmi>=24)&(bmi<=30)] 
 ```
 
 ### 向量的极值
-我们可以使用 `max()` 和 `min()` 函数分别获得向量的最大与最小值。
+我们可以使用`max()`和`min()`函数分别获得向量的最大与最小值。
 
-我们还可以使用 `which.max()` 和 `which.min()` 函数分别获得向量的最大与最小值对应的索引值。
+我们还可以使用`which.max()`和`which.min()`函数分别获得向量的最大与最小值对应的索引值。
+
 ```{r chapter1-vector-extremum}
-max(bmi) # max()函数默认不会排除NA
+# max()函数默认不会排除NA
+max(bmi) 
 max(bmi, na.rm=TRUE) 
 
-which.max(bmi) # 返回最大值的索引值，这里的索引值是包含缺失值在内的索引值
+# 返回最大值的索引值，这里的索引值是包含缺失值在内的索引值
+which.max(bmi) 
 which(bmi == max(bmi, na.rm=TRUE))
 ```
 
 ## 缺失值
-缺失值通常有三种显示形式：`NaN` （Not a Number，**非数值**）、`NULL`（absence of value，**空值**）和 `NA` (Not Available，**缺失值**)
+缺失值通常有三种显示形式：`NaN`（Not a Number，**非数值**）、`NULL`（absence of value，**空值**）和 `NA`（Not Available，**缺失值**）
 
 ### NaN
-R中的有些运算会导致结果为**非数值**，显示为 `NaN`，可以用 `is.nan()` 函数来判断。
+R中的有些运算会导致结果为**非数值**，显示为`NaN`，可以用`is.nan()`函数来判断。
 ```{r chapter-vector-nan}
 0/0
 is.nan(0/0)
 ```
 
 ### NULL
-R中的 `NULL` 表示空值，即没有内容，**长度为0且不占位置**，常用来<u>初始化变量</u>。可以用 `is.null()` 函数来判断。
+R中的`NULL`表示空值，即没有内容，**长度为0且不占位置**，常用来<u>初始化变量</u>。可以用`is.null()`函数来判断。
 ```{r chapter-vector-null}
 x <- NULL
 length(x)
@@ -182,23 +204,38 @@ is.null(x)
 ```
 
 ### NA
-`NA` 是R中真正意义上的缺失值。可以用 `is.na()` 函数来判断。
+`NA`是R中真正意义上的缺失值。可以用`is.na()`函数来判断。
 ```{r chapter1-vector-na}
-sum(is.na(bmi)) # 获取缺失值数目
-which(is.na(bmi)) # 获取缺失值的索引值
-bmi[!is.na(bmi)] # 移除缺失值
-na.omit(bmi) # 移除缺失值，同时显示缺失值的索引值
+# 获取缺失值数目
+sum(is.na(bmi)) 
+
+# 获取缺失值的索引值
+which(is.na(bmi))
+
+# 移除缺失值
+bmi[!is.na(bmi)] 
+
+# 移除缺失值，同时显示缺失值的索引值
+na.omit(bmi) 
 ```
 
-在处理含有缺失值的向量时，很多函数在*默认参数*下不能工作（使用 `?函数` 可以获取函数的详细介绍）。
+在处理含有缺失值的向量时，很多函数在*默认参数*下不能工作。
 
 ```{r chapter1-vector-na-process}
-mean(bmi) # 有缺失值时，函数在默认参数下不能工作
-mean(bmi, na.rm=TRUE) # 移除缺失值之后计算均值
+# 有缺失值时，函数在默认参数下不能工作
+mean(bmi) 
 
-bmi_impute <- bmi # 复制向量
-bmi_impute[is.na(bmi_impute)] <- mean(bmi_impute, na.rm=TRUE) # 对向量进行均值填补
-writeLines(paste0("填补后的目标向量为：", list(round(bmi_impute, 2)), "\n", "填补后的初始向量为：", list(bmi))) # 填补只会作用于（复制后的）目标向量，对初始向量无影响
+# 移除缺失值之后计算均值
+mean(bmi, na.rm=TRUE) 
+
+# 复制向量
+bmi_impute <- bmi 
+
+# 对向量进行均值填补
+bmi_impute[is.na(bmi_impute)] <- mean(bmi_impute, na.rm=TRUE) 
+
+# 填补只会作用于（复制后的）目标向量，对初始向量无影响
+writeLines(paste0("填补后的目标向量为：", list(round(bmi_impute, 2)), "\n", "填补后的初始向量为：", list(bmi))) 
 ```
 
 ## 矩阵 {#chapter1-label-matrix}
@@ -209,33 +246,49 @@ writeLines(paste0("填补后的目标向量为：", list(round(bmi_impute, 2)), 
 <li>`rbind()`函数指`row bind`，即**行**的叠加，要求输入的向量或矩阵的**列数**相同。</li>
 
 ```{r chapter1-matrix}
-# matrix()函数生成矩阵
+# 创建向量
 var_vector <- c(1,2,3,4,5,6)
+
+# matrix()函数生成矩阵
 var_matrix <- matrix(var_vector, nrow=2) 
 var_matrix
 
+# 列叠加
 cbind(var_matrix, var_matrix)
 
+# 行叠加
 rbind(var_matrix, var_matrix)
 ```
 
-矩阵的转置使用`t()`函数, `t`指`transpose`。
+矩阵的转置使用`t()`函数,`t`指`transpose`。
 ```{r chapter1-matrix-transpose}
 t(var_matrix)
 ```
 
 矩阵中元素的提取采用`[行索引,列索引]`的方式。
 ```{r chapter1-matrix-retrieve}
-var_matrix[1,2] # 提取第1行第2列的元素
-var_matrix[1,c(2,3)] # 提取第1行第2、3列的元素
-var_matrix[1,] # 提取第1行的所有元素
-var_matrix[,2] # 提取第2列的所有元素
+# 提取第1行第2列的元素
+var_matrix[1,2] 
+
+# 提取第1行第2、3列的元素
+var_matrix[1,c(2,3)] 
+
+# 提取第1行的所有元素
+var_matrix[1,]
+
+# 提取第2列的所有元素
+var_matrix[,2] 
 ```
 
 采用`dim()`函数（`dim`指`dimension`）获取矩阵的维度，`nrow()`函数获取矩阵的行数，`ncol()`函数获取矩阵的列数。
 ```{r chapter1-matrix-dim}
+# 获取维度
 dim(var_matrix)
+
+# 获取行数
 nrow(var_matrix)
+
+# 获取列数
 ncol(var_matrix)
 ```
 
@@ -247,10 +300,17 @@ cbind(c("M","F"), var_matrix)
 
 如上所示，当加入字符型数据后，矩阵中的数字也被**强制转变**为字符型（即被双引号包裹），这被称为**隐式强制**。因此，使用**数据框(dataframe)**可以存储不同类型的数据，保留原有数据的完整性。
 ```{r chapter1-dataframe-2}
-data(iris) # 调用R自带数据框做为演示
-class(iris) # 查看数据类型
-dim(iris) # 查看数据框维度
-str(iris) # 查看数据框内的变量类型
+# 调用R自带iris数据框
+data(iris) 
+
+# 查看数据类型
+class(iris) 
+
+# 查看数据框维度
+dim(iris) 
+
+# 查看数据框内的变量类型
+str(iris) 
 ```
 
 ## 数组
@@ -260,12 +320,16 @@ str(iris) # 查看数据框内的变量类型
 <li>`dim`输出维度，如果输出多维度，使用`c(m,n,k,..)`，其中m×n为最内层矩阵。</li>
 
 ```{r chapter1-array}
-var_array1 <- array(seq(1:18), dim=c(3,6)) # 创建3×6维的数组
+# 创建3×6维的数组
+var_array1 <- array(seq(1:18), dim=c(3,6)) 
 var_array1
 
-var_array2 <- array(seq(1:18), dim=c(3,2,3)) # 创建3×2×3维的数组 
+# 创建3×2×3维的数组 
+var_array2 <- array(seq(1:18), dim=c(3,2,3)) 
 var_array2
-var_array2[,,3] # 获取第3层的矩阵
+
+# 获取第3层的矩阵
+var_array2[,,3] 
 ```
 
 ## 列表
@@ -280,31 +344,43 @@ length(test_vector)
 
 length(unlist(test_list)) # 使用`unlist()`函数将列表转变为向量
 ```
-`list()`元素的获取采用`[[]]`+索引值的方式，添加元素使用`append()`函数。如果列表的元素有名称，可以采用`$`调用。
+
+在获取列表元素时，如果采用`[]`+索引值的方式，返回的结果为包含该元素的<u>列表</u>。如果需要将列表元素提取为<u>向量</u>，则需采用`[[]]`+索引值的方式。如果列表的元素有名称，可以采用`$`或`[[]]`+名称的方式调用。
+
+向列表添加元素可以使用`append()`函数。
 
 ***注意***：如果需要将**整个向量**添加进原有列表中，必须先将向量转为列表形式，否则R会将向量中的元素<u>逐个添加</u>为列表的元素。
-
 ```{r chapter1-list-retrieve}
-test_list[[1]] # 使用[[]]获取列表中的元素
+# 使用[[]]获取列表中的元素
+test_list[[1]] 
 
 # 如果列表的元素有名称，可以采用`$`调用
-names(test_list) <- c("vec", "n", "mtx") # 给列表的元素命名
-test_list$vec # 使用"$+名称"调用列表元素
+# 给列表的元素命名
+names(test_list) <- c("vec", "n", "mtx") 
+
+# 使用"$+名称"调用列表元素
+test_list$vec 
+
+# 使用"[[名称]]"调用列表元素
+test_list[["vec"]] 
 ```
 
 ```{r chapter1-list-retrieve-2}
-append(test_list, list(c(FALSE, FALSE, TRUE))) # 整个添加向量
-append(test_list, c(FALSE, FALSE, TRUE)) # 逐个添加向量元素
+# 整个添加向量
+append(test_list, list(c(FALSE, FALSE, TRUE))) 
+
+# 逐个添加向量元素
+append(test_list, c(FALSE, FALSE, TRUE)) 
 ```
 
 ## 字符串处理
 在处理数据过程中，通常会碰到<u>需要提取具有某一类特征的变量名</u>或者<u>需要从特定变量中筛选出包含某一类特征的字符串</u>的情况。**正则表达式（regular expression）**就是帮助我们<font color="red">**识别特定字符串**</font>的工具。
 
-R中可以使用 `grep` 函数、`grepl` 函数或者调用 *stringr* 包的 `str_view` 函数进行正则表达式匹配：
+R中可以使用`grep`函数、`grepl`函数或者调用***stringr***包的`str_view`函数进行正则表达式匹配：
 
-  - `grep` 函数返回目标字符串所在的位置（即索引值）。
-  - `grepl` 函数返回逻辑向量。
-  - *stringr* 包的 `str_view` 函数返回目标字符串，`str_detect`函数返回逻辑向量。
+<li>`grep`函数返回目标字符串所在的位置（即索引值）。</li>
+<li>`grepl`函数返回逻辑向量。</li>
+<li>***stringr***包的`str_view`函数返回目标字符串，`str_detect`函数返回逻辑向量。</li>
 
 正则表达式主要依赖于元字符，其具体含义如下表：
 
@@ -340,8 +416,8 @@ R中可以使用 `grep` 函数、`grepl` 函数或者调用 *stringr* 包的 `st
 
 ***注意***：
 
-- 在R中使用正则表达式时，字符型常量中一个`\`要写成两个`\\`。
-- 使用字符集简写时，`grep` 函数的 `perl` 参数需要被设定成 `TRUE`。
+<li>在R中使用正则表达式时，字符型常量中一个`\`要写成两个`\\`。</li>
+<li>使用字符集简写时，`grep`函数的`perl`参数需要被设定成`TRUE`。</li>
 
 ```{r chapter1-string-grep}
 # 创建字符串向量
@@ -358,7 +434,7 @@ var_name[grep("^ck[\\w\\s-]+2014$", var_name, ignore.case=TRUE, perl=TRUE)]
 ```
 
 ```{r chapter1-string-stringr}
-# 调用stringr包
+# 调用包
 library(stringr)
 str_view(var_name, "bmi") # 大小写敏感
 
@@ -366,47 +442,64 @@ str_view(var_name, "bmi") # 大小写敏感
 str_view(var_name, regex("bmi", ignore_case=TRUE)) 
 ```
 
-有时我们也会碰到在字符串的前后有空格的情况，这时我们可以用 `[\\s]*` 去进行正则表达式匹配或者使用 *stringr* 包的 `str_trim` 函数移除位于字符串两端的空格。
+有时我们也会碰到在字符串的前后有空格的情况，这时我们可以用`[\\s]*`去进行正则表达式匹配或者使用***stringr***包的`str_trim()`函数移除位于字符串两端的空格。如果需要移除字符串中间的多余空格（即仅保留一个空格），可以使用`str_squish()`函数。
 ```{r chapter1-string-trim}
 library(stringr)
-trim_list <- c(" the ", " good", "b ad ")
-str_trim(trim_list)
+trim_vector <- c(" the ", " good", "b  ad ")
+str_trim(trim_vector)
+
+trim_string <- " Marry   has a  little lamb. "
+str_squish(trim_vector) # 字符串中间仅保留一个空格
+str_squish(trim_string)
 ```
 
 ## 常用函数
 ### seq()函数
-`seq()` 函数用于生成一组数字序列，`seq` 代表 `sequence`。参数包括：
+`seq()`函数用于生成一组数字序列，`seq`代表`sequence`。参数包括：
 
-<li> `from` 数字序列起点，默认为1。</li>
-<li> `to` 数字序列终点。</li>
-<li> `by` 步长，可以为正数、负数或者小数。</li>
-<li> `length.out` 生成数字序列的长度。</li>
-<li> `along.with` 生成与目标序列相同长度的数字序列。</li>
+<li>`from`数字序列起点，默认为1。</li>
+<li>`to`数字序列终点。</li>
+<li>`by`步长，可以为正数、负数或者小数。</li>
+<li>`length.out`生成数字序列的长度。</li>
+<li>`along.with`生成与目标序列相同长度的数字序列。</li>
 
 ```{r chapter1-seq}
-seq(from=0, to=6, by=3) # 从0开始，在[0,6]范围内生成以3为步长的数字序列
-seq(from=1, to=6, by=3) # 超出范围的数字将不会被纳入到数字序列中
-seq(from=0, by=3, length.out=4) # 从0开始，以3为步长，生成一个包含4个元素的数字序列
+# 从0开始，在[0,6]范围内生成以3为步长的数字序列
+seq(from=0, to=6, by=3) 
+
+# 超出范围的数字将不会被纳入到数字序列中
+seq(from=1, to=6, by=3) 
+
+# 从0开始，以3为步长，生成一个包含4个元素的数字序列
+seq(from=0, by=3, length.out=4) 
 
 # 从1开始，以2为步长，生成一个与month.abb相同长度的数字序列
 seq(from=1, by=2, along.with=month.abb) 
 ```
 
 ### rep()函数
-`rep()`函数用于生成重复序列，`rep` 代表 `repeat`。参数包括：
+`rep()`函数用于生成重复序列，`rep`代表`repeat`。参数包括：
 
-<li> `x` 想要进行复制的对象，可以是一个数字，字符或者向量。</li>
-<li> `times` 对整个目标对象复制的次数，只能为正整数。</li>
-<li> `each` 对目标对象内元素复制的次数，只能为正整数。</li>
-<li> `length.out` 生成序列的长度。</li>
+<li>`x`想要进行复制的对象，可以是一个数字，字符或者向量。</li>
+<li>`times`对整个目标对象复制的次数，只能为正整数。</li>
+<li>`each`对目标对象内元素复制的次数，只能为正整数。</li>
+<li>`length.out`生成序列的长度。</li>
 
 ```{r chapter1-rep}
-rep(1:3, times=3) # 对向量c(1,2,3)复制2次
-rep(1:3, times=c(3,2,1)) # 对向量c(1,2,3)内的元素分别复制3、2、1次
-rep(1:3, each=2) # 对向量c(1,2,3)内的元素各复制2次
+# 对向量c(1,2,3)复制2次
+rep(1:3, times=3)
 
-rep(c("abc", "bbb"), time=3, length.out=3) # 超过的长度自动截断
-rep(c("abc", "bbb"), time=3, length.out=9) # 不足的长度自动填补
+# 对向量c(1,2,3)内的元素分别复制3、2、1次
+rep(1:3, times=c(3,2,1)) 
+
+# 对向量c(1,2,3)内的元素各复制2次
+rep(1:3, each=2) 
+
+# 超过的长度自动截断
+rep(c("abc", "bbb"), time=3, length.out=3) 
+
+# 不足的长度自动填补
+rep(c("abc", "bbb"), time=3, length.out=9) 
 ```
 
 ### unique()函数
@@ -415,13 +508,32 @@ rep(c("abc", "bbb"), time=3, length.out=9) # 不足的长度自动填补
 unique(c(1,2,2,3,4,3,2))
 ```
 
+### quantile()函数
+`quantile()`函数用于获取分位数。
+```{r chapter1-quantile}
+# 获取上下四分位数以及中位数
+quantile(seq(0,1,0.05), probs=c(0.25,0.5,0.75))
+```
+
+### floor()、ceiling()、round()函数
+有时我们需要对小数进行处理。
+<li>`floor()`函数返回不大于当前数字的最大整数，实际操作为提取数字的整数部分。</li>
+<li>`ceiling()`函数返回不小于于当前数字的最小整数，实际操作为提取数字的整数部分<u>再加1</u>。</li>
+<li>`round()`函数用于四舍五入至特定小数位。</li>
+```{r chapter1-round}
+num_demo <- 3.1415926
+floor(num_demo)
+ceiling(num_demo)
+round(num_demo, 3)
+```
+
 ### sample()函数
 `sample()`函数用于随机抽样。参数包括：
 
-<li> `x` 想要进行抽样的向量。</li>
-<li> `size` 想要进行抽样的向量。</li>
-<li> `replace` 默认为`FALSE`，即不重复抽样，此时 `size` <font color="red">不能大于</font> `x`。若为`TRUE`，则为重复抽样，此时 `size` 可以大于 `x`。</li>
-<li> `prob` 向量中各元素被抽到的概率，默认为`NULL`，即概率相同。</li>
+<li>`x`想要进行抽样的向量。</li>
+<li>`size`想要进行抽样的向量。</li>
+<li>`replace`默认为`FALSE`，即不重复抽样，此时`size`<font color="red">不能大于</font>`x`。若为`TRUE`，则为重复抽样，此时`size`可以大于`x`。</li>
+<li>`prob`向量中各元素被抽到的概率，默认为`NULL`，即概率相同。</li>
 
 ***注意***：在进行随机抽样前，使用 `set.seed()` 函数设置[随机种子](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/Random)可以保证抽样结果的复现。随机种子的赋值只需初始化一次。
 
@@ -433,20 +545,25 @@ sample(1:6, size=10, replace=TRUE) # 从[1,6]中重复地随机抽取10个元素
 ### combn()函数
 `combn()`函数用于获得目标向量中指定长度的所有组合，常用于需要遍历变量组合的情况。参数包括：
 
-<li> `x` 目标向量。</li>
-<li> `m` 指定组合长度。</li>
-<li> `simplify` 默认为`TRUE`，即返回矩阵。若为`FALSE`，则返回列表。</li>
+<li>`x`目标向量。</li>
+<li>`m`指定组合长度。</li>
+<li>`simplify`默认为`TRUE`，即返回矩阵。若为`FALSE`，则返回列表。</li>
 
 ```{r chapter1-combn}
-var_list <- c("bmi", "age", "sex", "education") # 生成变量向量
+# 创建向量
+var_list <- c("bmi", "age", "sex", "education") 
 
-combn(var_list, 3) # 将var_list内的三个元素随机组合，返回为矩阵
+# 将var_list内的三个元素随机组合，返回为矩阵
+combn(var_list, 3) 
 
-combn(var_list, 3)[,1] # 获取返回矩阵的第一个组合
+# 获取返回矩阵的第一个组合
+combn(var_list, 3)[,1] 
 
-combn(var_list, 3, simplify=FALSE) # 将变量var_list内的三个元素随机组合，返回为列表
+# 将变量var_list内的三个元素随机组合，返回为列表
+combn(var_list, 3, simplify=FALSE) 
 
-combn(var_list, 3, simplify=FALSE)[[1]] # 获取返回列表的第一个组合
+# 获取返回列表的第一个组合
+combn(var_list, 3, simplify=FALSE)[[1]] 
 ```
 
 ### paste()函数
@@ -467,28 +584,32 @@ paste(var_list, collapse="+") # 返回一个字符串
 ### ifelse()函数 {#chapter1-label-ifelse}
 `ifelse()`函数为条件函数，包含三个参数：
 
-<li> `test` 条件。</li>
-<li> `yes` 条件为TRUE时的返回值。</li>
-<li> `no` 条件为FALSE时的返回值。</li>
+<li>`test`条件。</li>
+<li>`yes`条件为TRUE时的返回值。</li>
+<li>`no`条件为FALSE时的返回值。</li>
 
 此函数在条件判断中可以得到多个逻辑结果，返回对应数目的逻辑值并根据逻辑值赋值（注意与`if(){}else{}`函数\@ref(chapter1-label-if-else)的区别）。此函数可以嵌套。
-
 ```{r chapter1-ifelse}
+# 创建向量
 age <- seq(1,4)
 target <- c(2,2,4,4)
-ifelse(age==target, "Y", "N") # 可进行多个逻辑判断并分别返回值
+
+# ifelse可进行多个逻辑判断并分别返回值
+ifelse(age==target, "Y", "N") 
 ifelse(age==1, "age1", ifelse(age<4, "age2", "age3"))
 ```
 
 ### if(){}else{}函数 {#chapter1-label-if-else}
 `()`内为判断条件，如果为真，则运行第一个`{}`的指令，否则运行第二个`{}`的指令。此判断条件中只接受<u>一个</u>逻辑结果。如果输入多个逻辑结果，将会报错，此时需要用`any()`或者`all()`函数对多个逻辑结果进行处理。使用多个`else if(){}`进行嵌套。
 
-这些此函数与`ifelse()`函数\@ref(chapter1-label-ifelse)的区别。
-
+注意与`ifelse()`函数\@ref(chapter1-label-ifelse)的区别。
 ```{r chapter1-if-else}
+# if(){}else{}只接受一个逻辑值
 if(any(age==c(1,1,1,1))){"Y"} else{"N"}
 
+# 创建向量
 new_age <- 55
+
 if(new_age<40){
   "青年"
 } else if(new_age<60){
@@ -500,8 +621,8 @@ if(new_age<40){
 #### for循环
 for循环是R语言中最常用的迭代函数之一，形式为`for(){}`：
 
-<li> `()` 内为迭代器，即需要迭代的向量。</li>
-<li> `{}` 内为想要运行的指令。</li>
+<li>`()`内为迭代器，即需要迭代的向量。</li>
+<li>`{}`内为想要运行的指令。</li>
 
 ```{r chapter1-for-loop}
 for(i in seq(1:4)){
@@ -520,9 +641,9 @@ sum_container
 #### while循环
 `while(){}`循环将重复执行`{}`中的指令直至<font color="red">不能满足</font>`()`中的条件。
 ```{r chapter1-while}
-init_num <- 0
+init_num <- 0 # 设定初始值
 while(init_num<4){
-  init_num = init_num + 1
+  init_num = init_num + 1 # 每次计数+1
   print(paste0("已完成", init_num, "次运算。"))
 }
 ```
@@ -533,6 +654,7 @@ while(init_num<4){
 <li>`X`输入数据。</li>
 <li>`MARGIN`指令执行方向。</li>
 <li>`FUN`执行指令。</li>
+
 |FUN|MARGIN|指令执行说明|
 |:---|:---|:---|
 |当指令需要作用于多个元素|MARGIN=1|逐行运行指令，返回向量|
@@ -543,26 +665,41 @@ while(init_num<4){
 ```{r chapter1-apply}
 # apply()函数与矩阵
 var_matrix <- matrix(c(1,4,9,16,25,36),nrow=2)
-apply(var_matrix, 1, sum) # 指令作用于多个元素
-apply(var_matrix, 2, sum) # 指令作用于多个元素
-apply(var_matrix, 1, sqrt) # 指令作用于单个元素
-apply(var_matrix, 2, sqrt) # 指令作用于单个元素
+
+# 指令作用于多个元素
+apply(var_matrix, 1, sum) 
+
+# 指令作用于多个元素
+apply(var_matrix, 2, sum) 
+
+# 指令作用于单个元素
+apply(var_matrix, 1, sqrt) 
+
+# 指令作用于单个元素
+apply(var_matrix, 2, sqrt) 
 
 # apply()函数与数据框
+# 读取数据
 data(iris)
-apply(iris[,c(1,3)], 2, sum) # 对iris数据库中的第1、3列分别求和
+
+# 对iris数据库中的第1、3列分别求和
+apply(iris[,c(1,3)], 2, sum) 
 ```
 
-当需要对列表进行统一的特定处理时，可以使用`lapply()`函数，返回类型为列表。主要参数为`X`即输入数据和`FUN`执行指令。当`FUN`作用于`X`内的单个元素时，`X`的结构不会发生改变。
+当需要对列表或数据框进行统一的特定处理时，可以使用`lapply()`函数，返回类型为列表。主要参数为`X`即输入数据和`FUN`执行指令。当`FUN`作用于`X`内的单个元素时，`X`的结构不会发生改变。
 
 ```{r chapter1-lapply}
 var_vector_list <- list(c(1,4,9), c(16,25,36))
 lapply(var_vector_list, sum) 
+
+# 函数作用于单个元素时，元素结构不会发生改变
 lapply(var_vector_list, sqrt) 
 
 var_matrix_list <- list(matrix(c(1,4,9,16,25,36),nrow=2),matrix(c(1,4,9,16,25,36),nrow=2))
-lapply(var_vector_list, sum) 
-lapply(var_matrix_list, sqrt)
+lapply(var_matrix_list, sum) 
+
+# 函数作用于单个元素时，元素结构不会发生改变
+lapply(var_matrix_list, sqrt) 
 ```
 
 当需要对列表、向量或数据框进行统一的特定处理且希望返回最简单的数据结构时，可以使用`sapply()`函数。
@@ -592,7 +729,7 @@ tapply(iris[,1], iris$Species, mean)
 |函数|主要参数|输入数据类型|输出数据类型|
 |:---|:---|:---|:---|
 |apply|apply(X,MARGIN,FUN)|矩阵、数据框|向量、矩阵|
-|lapply|lapply(X,FUN)|列表|列表|
+|lapply|lapply(X,FUN)|列表、数据框|列表|
 |sapply|sapply(X,FUN)|列表、矩阵、数据框|向量、矩阵|
 |tapply|tapply(X,INDEX,FUN)|向量|数组|
 
@@ -647,4 +784,20 @@ accumulation <- function(x){
 
 accumulation(c(1))
 accumulation(seq(1:4))
+
+# 方法2：使用while循环
+accumulation2 <- function(x){
+  init_num <- x[1]
+  vec_length <- length(x) 
+  result <- c(init_num)
+  while(vec_length>1){
+    vec_length <- vec_length - 1
+    init_num <- init_num + x[length(x)-vec_length+1]
+    result <- append(result, init_num)
+  }
+  return(result)
+}
+
+accumulation2(c(1))
+accumulation2(seq(1:4))
 ```
