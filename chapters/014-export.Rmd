@@ -1,0 +1,20 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 数据导出
+
+| 数据导出类型                 | 导出时调用包   | 导出函数      | 读取时调用包   | 读取函数     |
+|:------------------|:-------------|:-------------|:-------------|:-------------|
+| R数据文件（\*.Rdata）        | base（R自带）  | save()        | base（R自带）  | load()       |
+| CSV文件（\*.csv）            | utils（R自带） | write.csv()   | utils（R自带） | read.csv()   |
+| 自定义文件（\*.csv或\*.txt） | utils（R自带） | write.table() | utils（R自带） | read.csv()   |
+| excel文件（\*.xlsx）         | WriteXLS       | WriteXLS()    | readxl         | read_excel() |
+
+```{r chapter014-export}
+# 将goods_df导出为goods.csv文件，导出位置为D盘
+# row.names=FALSE时将不会导出数据索引值
+# write.csv(goods_df, "D:/goods.csv", row.names=FALSE)
+```

@@ -1,0 +1,101 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# ggplot2基本介绍
+## 眼见为实
+尽管我们一直在强调用数据说话，但是有时统计数据并不能反映数据的全貌。下面我们来看迈阿密大学Alberto Cairo教授使用的一个经典例子。我们先来看这样一批数据，这些数据的统计结果如下。
+```{r chapter018-intro, message=FALSE}
+# 加载包
+library(tidyverse)
+
+# 读取数据
+df_plot <- read_csv("data/datasaurus.csv")
+
+# 按dataset分类，计算x与y变量的均值和标准差
+df_plot %>% 
+  group_by(dataset) %>% 
+  summarise(
+    x_mean = mean(x),
+    x_sd = sd(x),
+    y_mean = mean(y),
+    y_sd = sd(y)
+  )
+```
+
+根据统计结果，我们可以发现，上面数据中各个dataset分类之间的x与y对应的均值和标准差都非常类似，那这是否意味着这些数据来自同一个群体呢？我们将各个dataset的数据画出来，可以得到下图。
+```{r chapter018-demo-graph, echo=FALSE, fig.height=10, fig.width=6}
+ggplot(data=df_plot, mapping=aes(x,y,color=dataset)) +
+  geom_point() +
+  theme(legend.position="none")+
+  facet_wrap("dataset", ncol=3)
+```
+
+我们可以看到，虽然各个dataset分类的均值和标准差类似，但是实际数据分布却千差万别。由此可见，数据可视化可以帮助我们更直观地了解数据的分布特征及数据间的相关性。
+
+## 图形语法
+`ggplot2`是`tidyverse`中进行数据可视化的常用包，其语法规则遵循[图形语法](https://www.springer.com/gp/book/9780387245447)（grammar of graphics）。基本思想是基于**数据**构建**图形属性**和**统计转换**的**映射**，将结果绘制在特定的**坐标系**中，有点类似绘画中**图层堆叠**的概念，[示意图](https://r.qcbs.ca/workshop03/book-en/grammar-of-graphics-gg-basics.html)如下：
+
+<div align=center> <img src="images/chapter018-gglayers.png"> </div>
+
+<div align=center> <img src="images/chapter018-gramma.png"> </div>
+
+主要语法：
+
+<li>`data`：指绘图的数据来源，格式为数据框，不支持向量和列表格式。</li>
+<li>`aes`：代表`aesthetics`，指数据映射的图形属性，比如哪个变量映射到x轴，哪个映射到y轴，哪些则是形状、颜色、透明度等属性的映射，更多图样可参考[此链接](https://ggplot2.tidyverse.org/reference/#geoms)。</li>
+<li style="text-indent: 2em; list-style-type: square">`x`：指x轴方向的数据。</li>
+<li style="text-indent: 2em; list-style-type: square">`y`：指y轴方向的数据。</li>
+<li style="text-indent: 2em; list-style-type: square">`color`：指元素的颜色[小节\@ref(chapter018-label-palette)]。</li>
+<li style="text-indent: 2em; list-style-type: square">`fill`：指元素的填充设置。</li>
+<li style="text-indent: 2em; list-style-type: square">`size`/`linewidth`：指元素的大小，`size`用于点的大小设置，`linewidth`用于线的粗细设置。</li>
+<li style="text-indent: 2em; list-style-type: square">`shape`：指元素的形状[小节\@ref(chapter018-label-shape)]。</li>
+<li style="text-indent: 2em; list-style-type: square">`alpha`：指元素的透明度，范围为0-1，0为完全透明，1为不透明。</li>
+<li>`geom_*`：代表`geometric`，用于[作图](https://ggplot2.tidyverse.org/reference/#geoms)（如散点图、柱状图等）、绘制[拟合曲线](https://zhuanlan.zhihu.com/p/163504655)、添加[线段箭头](https://ggplot2.tidyverse.org/reference/geom_segment.html)、[添加标签](https://ggplot2.tidyverse.org/reference/geom_text.html)等。</li>
+<li>`stat_*`：代表`statistics`，指进行统计转换后再作图，比如制作包含均值和标准差的[线图](https://www.jianshu.com/p/e554af9341fb)或者[置信圈](https://ggplot2.tidyverse.org/reference/stat_ellipse.html)。</li>
+<li>`position_*`：用于调整图形元素的[实际位置](https://blog.csdn.net/weixin_54000907/article/details/120108707)，比如柱状图的平行排列或者堆积。</li>
+<li>`facet_*`：用于制作[分面图](https://ggplot2.tidyverse.org/reference/facet_grid.html)，即基于特定变量按照行或列的形式分别作图。当仅基于单个变量的多个水平做分面图时，建议使用`facet_wrap()`[函数](https://ggplot2.tidyverse.org/reference/facet_wrap.html)。</li>
+<li>`coord_*`：用于[坐标轴的转换](https://zhuanlan.zhihu.com/p/29553382)，如翻转、饼图、对数转换等。
+<li>`theme`：用于调整非数据部分（如标题颜色、字体、字号、前景色、背景色、网格、刻度角度）的[格式](https://ggplot2.tidyverse.org/reference/theme.html)。</li>
+
+其它语法：
+<li>`labs`：用于添加标题、图注和坐标轴。[参考链接](https://ggplot2.tidyverse.org/reference/labs.html)。</li>
+<li>`scale_*`：用于[修改默认设置](https://zhuanlan.zhihu.com/p/29566559)，比如分类变量对应的颜色，坐标轴的刻度，坐标轴[扩展调整](https://www.jianshu.com/p/8e2b9b2812b8)和[图例简易调整](https://blog.csdn.net/tanzuozhev/article/details/51108040)。</li>
+<li style="text-indent: 2em; list-style-type: square">当图例是基于填充`fill`生成的时候（如柱状图），需要选择`scale_fill_*`调整图例。</li>
+<li style="text-indent: 2em; list-style-type: square">当图例是基于颜色`color`生成的时候（如散点图和线图），需要选择`scale_color_*`调整图例。</li>
+<li style="text-indent: 2em; list-style-type: square">当要调整的变量的数据类型是连续型时，可以选择`scale_*_continuous`调整。</li>
+<li style="text-indent: 2em; list-style-type: square">当要调整的变量的数据类型是分类变量时，可以选择`scale_*_discrete`调整。</li>
+<li style="text-indent: 2em; list-style-type: square">当要自定义调整（比如不基于现有变量进行设置）时，可以选择`scale_*_manual`调整。</li>
+<li>`guides`：用于对图例、坐标轴刻度样式的[精细调整](https://ggplot2.tidyverse.org/reference/guides.html)。</li>
+<li>`ggsave()`：用于[导出图像](https://ggplot2.tidyverse.org/reference/ggsave.html)。</li>
+
+## 元素的颜色 {#chapter018-label-palette}
+`ggplot2`的默认调色板如下所示：
+
+<div align=center> <img src="images/chapter018-color-palettes.webp"> </div>
+
+使用特定调色板时，需声明`palette="调色板名称"`。关于调色板设置的具体操作，可以参考[此链接](https://zhuanlan.zhihu.com/p/148191291)。
+
+## 元素的形状 {#chapter018-label-shape}
+
+使用特定点的形状时，需声明`shape=点形状对应的序号`。点的形状可参考[此链接](https://ggplot2.tidyverse.org/reference/scale_shape.html)。我们也可以设定点的形状根据变量的值而改变，此时需声明`shape=变量名称`。
+
+使用特定线的类型时，需声明`linetype=线类型的名称或对应的序号`。1对应"solid"，2对应"dashed"，依此类推。我们也可以设定线的类型根据变量的值而改变，此时需声明`linetype=变量名称`。
+```{r chapter3-linetype, echo=FALSE, fig.height=4, fig.width=5}
+df_lines <- data.frame(
+  linetype = factor(1:6,
+    labels = c("solid", "dashed", "longdash", "dotted", "dotdash", "twodash")
+  )
+)
+ggplot(df_lines) +
+  geom_hline(aes(linetype = linetype, yintercept = 0), linewidth = 1.5) +
+  scale_linetype_identity() +
+  facet_grid(linetype ~ .) +
+  theme(
+    panel.grid = element_blank(),
+    axis.ticks = element_blank(), 
+    axis.text = element_blank(),
+  )
+```

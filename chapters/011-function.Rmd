@@ -1,0 +1,352 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 常用函数
+## seq()函数
+`seq()`函数用于生成一组数字序列，`seq`代表`sequence`。参数包括：
+
+<li>`from`数字序列起点，默认为1。</li>
+<li>`to`数字序列终点。</li>
+<li>`by`步长，可以为正数、负数或者小数。</li>
+<li>`length.out`生成数字序列的长度。</li>
+<li>`along.with`生成与目标序列相同长度的数字序列。</li>
+
+```{r chapter011-seq}
+# 从0开始，在[0,6]范围内生成以3为步长的数字序列
+seq(from=0, to=6, by=3) 
+
+# 超出范围的数字将不会被纳入到数字序列中
+seq(from=1, to=6, by=3) 
+
+# 从0开始，以3为步长，生成一个包含4个元素的数字序列
+seq(from=0, by=3, length.out=4) 
+
+# 从1开始，以2为步长，生成一个与month.abb相同长度的数字序列
+seq(from=1, by=2, along.with=month.abb) 
+```
+
+## rep()函数
+`rep()`函数用于生成重复序列，`rep`代表`repeat`。参数包括：
+
+<li>`x`想要进行复制的对象，可以是一个数字，字符或者向量。</li>
+<li>`times`对整个目标对象复制的次数，只能为正整数。</li>
+<li>`each`对目标对象内元素复制的次数，只能为正整数。</li>
+<li>`length.out`生成序列的长度。</li>
+
+```{r chapter011-rep}
+# 对向量c(1,2,3)复制2次
+rep(1:3, times=3)
+
+# 对向量c(1,2,3)内的元素分别复制3、2、1次
+rep(1:3, times=c(3,2,1)) 
+
+# 对向量c(1,2,3)内的元素各复制2次
+rep(1:3, each=2) 
+
+# 超过的长度自动截断
+rep(c("abc", "bbb"), time=3, length.out=3) 
+
+# 不足的长度自动填补
+rep(c("abc", "bbb"), time=3, length.out=9) 
+```
+
+## unique()函数
+`unique()`函数用于移除重复值。
+```{r chapter011-unique}
+unique(c(1,2,2,3,4,3,2))
+```
+
+## quantile()函数
+`quantile()`函数用于获取分位数。
+```{r chapter011-quantile}
+# 获取上下四分位数以及中位数
+quantile(seq(0,1,0.05), probs=c(0.25,0.5,0.75))
+```
+
+## floor()、ceiling()、round()函数
+有时我们需要对小数进行处理。
+<li>`floor()`函数返回不大于当前数字的最大整数，实际操作为提取数字的整数部分。</li>
+<li>`ceiling()`函数返回不小于于当前数字的最小整数，实际操作为提取数字的整数部分<u>再加1</u>。</li>
+<li>`round()`函数用于四舍五入至特定小数位。</li>
+```{r chapter011-round}
+num_demo <- 3.1415926
+floor(num_demo)
+ceiling(num_demo)
+round(num_demo, 3)
+```
+
+## sample()函数
+`sample()`函数用于随机抽样。参数包括：
+
+<li>`x`想要进行抽样的向量。</li>
+<li>`size`想要进行抽样的向量。</li>
+<li>`replace`默认为`FALSE`，即不重复抽样，此时`size`<font color="red">不能大于</font>`x`。若为`TRUE`，则为重复抽样，此时`size`可以大于`x`。</li>
+<li>`prob`向量中各元素被抽到的概率，默认为`NULL`，即概率相同。</li>
+
+***注意***：在进行随机抽样前，使用 `set.seed()` 函数设置[随机种子](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/Random)可以保证抽样结果的复现。随机种子的赋值只需初始化一次。
+
+```{r chapter011-sample}
+# set.seed(1)
+sample(1:6, size=10, replace=TRUE) # 从[1,6]中重复地随机抽取10个元素
+```
+
+## combn()函数
+`combn()`函数用于获得目标向量中指定长度的所有组合，常用于需要遍历变量组合的情况。参数包括：
+
+<li>`x`目标向量。</li>
+<li>`m`指定组合长度。</li>
+<li>`simplify`默认为`TRUE`，即返回矩阵。若为`FALSE`，则返回列表。</li>
+
+```{r chapter011-combn}
+# 创建向量
+var_list <- c("bmi", "age", "sex", "education") 
+
+# 将var_list内的三个元素随机组合，返回为矩阵
+combn(var_list, 3) 
+
+# 获取返回矩阵的第一个组合
+combn(var_list, 3)[,1] 
+
+# 将变量var_list内的三个元素随机组合，返回为列表
+combn(var_list, 3, simplify=FALSE) 
+
+# 获取返回列表的第一个组合
+combn(var_list, 3, simplify=FALSE)[[1]] 
+```
+
+## paste()函数
+`paste()`函数用于将向量、数字或字符合并成<u>字符串</u>，常用于特定语句的生成。
+
+<li>`sep`参数用于定义将不同向量或字符合并成字符串所用的连接符。</li>
+<li>`collapse`参数用于定义将单一向量内元素合并成字符串所用的连接符。</li>
+
+```{r chapter011-paste}
+# 将不同向量或字符合并成字符串
+paste("are", "you", "OK", sep=" ") # 返回一个字符串
+paste0("are", "you", "OK") # paste0()与paste(sep="")一样
+paste(var_list, "cn", sep="-") # 返回包含字符串的向量
+
+# 将单一向量内元素合并成字符串
+paste(var_list, collapse="+") # 返回一个字符串
+```
+
+## ifelse()函数 {#chapter011-label-ifelse}
+`ifelse()`函数为条件函数，包含三个参数：
+
+<li>`test`条件。</li>
+<li>`yes`条件为TRUE时的返回值。</li>
+<li>`no`条件为FALSE时的返回值。</li>
+
+此函数在条件判断中可以得到多个逻辑结果，返回对应数目的逻辑值并根据逻辑值赋值（注意与`if(){}else{}`函数[小节\@ref(chapter011-label-if-else)]的区别）。此函数可以嵌套。
+```{r chapter011-ifelse}
+# 创建向量
+age <- seq(1,4)
+target <- c(2,2,4,4)
+
+# ifelse可进行多个逻辑判断并分别返回值
+ifelse(age==target, "Y", "N") 
+ifelse(age==1, "age1", ifelse(age<4, "age2", "age3"))
+```
+
+## if(){}else{}函数 {#chapter011-label-if-else}
+`()`内为判断条件，如果为真，则运行第一个`{}`的指令，否则运行第二个`{}`的指令。此判断条件中只接受<u>一个</u>逻辑结果。如果输入多个逻辑结果，将会报错，此时需要用`any()`或者`all()`函数对多个逻辑结果进行处理。使用多个`else if(){}`进行嵌套。
+
+注意与`ifelse()`函数[小节\@ref(chapter011-label-ifelse)]的区别。
+```{r chapter011-if-else}
+# if(){}else{}只接受一个逻辑值
+if(any(age==c(1,1,1,1))){"Y"} else{"N"}
+
+# 创建向量
+new_age <- 55
+
+if(new_age<40){
+  "青年"
+} else if(new_age<60){
+  "中年"
+} else {"老年"}
+```
+
+## 循环
+### for循环
+for循环是R语言中最常用的迭代函数之一，形式为`for(){}`：
+
+<li>`()`内为迭代器，即需要迭代的向量。</li>
+<li>`{}`内为想要运行的指令。</li>
+
+```{r chapter011-for-loop}
+for(i in seq(1:4)){
+  print(paste0("现在的数字是：", i)) # 循环打印
+}
+
+ini_num <- 5 # 设定初始值
+sum_container <- c() # 创建空向量
+for(i in seq(1,5,by=2)){
+  ini_num = ini_num + i # 迭代求和
+  sum_container <- append(sum_container, ini_num) # 将求和值添加入向量
+}
+sum_container
+```
+
+### while循环
+`while(){}`循环将重复执行`{}`中的指令直至<font color="red">不能满足</font>`()`中的条件。
+```{r chapter011-while}
+init_num <- 0 # 设定初始值
+while(init_num<4){
+  init_num = init_num + 1 # 每次计数+1
+  print(paste0("已完成", init_num, "次运算。"))
+}
+```
+
+### apply()函数
+当需要对矩阵或者数据框进行统一的特定处理时，为避免重复使用循环，可以选择`apply()`函数，返回类型为向量或矩阵。此函数中三个主要的参数为：
+
+<li>`X`输入数据。</li>
+<li>`MARGIN`指令执行方向。</li>
+<li>`FUN`执行指令。</li>
+
+|FUN|MARGIN|指令执行说明|
+|:---|:---|:---|
+|当指令需要作用于多个元素|MARGIN=1|逐行运行指令，返回向量|
+|当指令需要作用于多个元素|MARGIN=2|逐列运行指令，返回向量|
+|当指令只作用于单个元素|MARGIN=1|逐个运行指令，返回矩阵。可以理解为将数据转置后对单个元素进行处理。|
+|当指令只作用于单个元素|MARGIN=2|逐个运行指令，返回矩阵。可以理解为在原有数据上直接对单个元素进行处理。|
+
+```{r chapter011-apply}
+# apply()函数与矩阵
+var_matrix <- matrix(c(1,4,9,16,25,36),nrow=2)
+
+# 指令作用于多个元素
+apply(var_matrix, 1, sum) 
+
+# 指令作用于多个元素
+apply(var_matrix, 2, sum) 
+
+# 指令作用于单个元素
+apply(var_matrix, 1, sqrt) 
+
+# 指令作用于单个元素
+apply(var_matrix, 2, sqrt) 
+
+# apply()函数与数据框
+# 读取数据
+data(iris)
+
+# 对iris数据库中的第1、3列分别求和
+apply(iris[,c(1,3)], 2, sum) 
+```
+
+当需要对列表或数据框进行统一的特定处理时，可以使用`lapply()`函数，返回类型为列表。主要参数为`X`即输入数据和`FUN`执行指令。当`FUN`作用于`X`内的单个元素时，`X`的结构不会发生改变。
+
+```{r chapter011-lapply}
+var_vector_list <- list(c(1,4,9), c(16,25,36))
+lapply(var_vector_list, sum) 
+
+# 函数作用于单个元素时，元素结构不会发生改变
+lapply(var_vector_list, sqrt) 
+
+var_matrix_list <- list(matrix(c(1,4,9,16,25,36),nrow=2),matrix(c(1,4,9,16,25,36),nrow=2))
+lapply(var_matrix_list, sum) 
+
+# 函数作用于单个元素时，元素结构不会发生改变
+lapply(var_matrix_list, sqrt) 
+```
+
+当需要对列表、向量或数据框进行统一的特定处理且希望返回最简单的数据结构时，可以使用`sapply()`函数。
+
+```{r chapter011-sapply}
+var_matrix <- matrix(c(1,4,9,16,25,36),nrow=2)
+sapply(var_matrix, sum) # 返回向量
+sapply(var_matrix, sqrt) # 返回向量
+
+var_vector_list <- list(c(1,4,9), c(16,25,36))
+sapply(var_vector_list, sum) # 返回向量
+sapply(var_vector_list, sqrt) # 返回矩阵
+
+var_matrix_list <- list(matrix(c(1,4,9,16,25,36),nrow=2),matrix(c(1,4,9,16,25,36),nrow=2))
+sapply(var_vector_list, sum) # 返回向量
+sapply(var_matrix_list, sqrt) # 返回矩阵
+```
+
+当需要对向量**按类别**进行统一的特定处理时，可以使用`tapply()`函数，返回数组。
+```{r chapter011-tapply}
+data(iris)
+tapply(iris[,1], iris$Species, mean)
+```
+
+小结
+
+|函数|主要参数|输入数据类型|输出数据类型|
+|:---|:---|:---|:---|
+|apply|apply(X,MARGIN,FUN)|矩阵、数据框|向量、矩阵|
+|lapply|lapply(X,FUN)|列表、数据框|列表|
+|sapply|sapply(X,FUN)|列表、矩阵、数据框|向量、矩阵|
+|tapply|tapply(X,INDEX,FUN)|向量|数组|
+
+## 自定义函数
+`function(){}`用于自定义函数，其中`()`用于定义函数的参数，`{}`用于定义函数的指令并以`return()`定义要返回的数据。
+```{r chapter011-function-length}
+# 定义一个函数，用于报告向量长度
+length_report <- function(x){
+  print(paste0("此向量的长度是：", length(x)))
+}
+
+length_report(c("bmi", "grip", "sex", "age"))
+```
+
+```{r chapter011-function-single-return}
+# 定义一个x+2y的函数，返回运算结果
+multiply_function <- function(x,y){
+  return(x+2*y)
+}
+
+result_multiply <- multiply_function(2,3) # 传入参数位置与函数参数位置对应
+result_multiply
+```
+
+```{r chapter011-function-single-optional}
+# 定义默认变量
+multiply_function2 <- function(x,y,z="运算完成！"){
+  print(z)
+  return(x+2*y)
+}
+
+multiply_function2(2,3)
+multiply_function2(2,3,"哈哈，运算完成~")
+```
+
+函数只能返回一个结果，所以，如果有多个结果需要返回时，可以将结果整合为向量、列表或者数据框的形式之后再返回。
+
+```{r chapter011-function-multiple-return}
+# 定义一个函数，获取向量内个元素累计叠加的值
+accumulation <- function(x){
+  init_num <- x[1] # 获取第1个元素
+  result <- c(init_num) # 建立result向量收集结果
+  if (length(x)>=2){
+    for(i in seq(2,length(x))) {
+      init_num <- init_num + x[i]
+      result <- append(result, init_num)
+    }
+  }
+  return(result) # 返回向量
+}
+
+accumulation(seq(1:4))
+
+# 方法2：使用while循环
+accumulation2 <- function(x){
+  init_num <- x[1]
+  vec_length <- length(x) 
+  result <- c(init_num)
+  while(vec_length>1){
+    vec_length <- vec_length - 1
+    init_num <- init_num + x[length(x)-vec_length+1]
+    result <- append(result, init_num)
+  }
+  return(result)
+}
+
+accumulation2(seq(1:4))
+```

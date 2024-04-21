@@ -1,0 +1,63 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 缺失值 
+## 常见的缺失值形式 
+缺失值通常有三种形式：`NaN`（Not a Number，**非数值**）、`NULL`（absence of value，**空值**）和 `NA`（Not Available，**缺失值**）
+
+## NaN 
+R中的有些运算会导致结果为**非数值**，显示为`NaN`，可以用`is.nan()`函数来判断。
+```{r chapter005-vector-nan}
+0/0
+is.nan(0/0)
+```
+
+## NULL 
+R中的`NULL`表示空值，即没有内容，**长度为0且不占位置**，常用来<u>初始化变量</u>。可以用`is.null()`函数来判断。
+```{r chapter005-vector-null}
+x <- NULL
+length(x)
+is.null(x)
+```
+
+## NA 
+`NA`是R中真正意义上的缺失值。可以用`is.na()`函数来判断。
+```{r chapter005-vector-na}
+# 创建bmi向量
+bmi <- c(26.5, 22.4, NA, 25.5, 31, 27, 20, NA, 19.4, 23, 30)
+
+# 获取缺失值数目
+sum(is.na(bmi)) 
+
+# 获取缺失值的索引值
+which(is.na(bmi))
+
+# 移除缺失值
+bmi[!is.na(bmi)] 
+
+# 移除缺失值，同时显示缺失值的索引值
+na.omit(bmi) 
+```
+
+## 缺失值的存在与函数运行 
+在处理含有缺失值的向量时，很多函数在*默认参数*下不能工作。
+
+```{r chapter005-vector-na-process}
+# 有缺失值时，函数在默认参数下不能工作
+mean(bmi) 
+
+# 移除缺失值之后计算均值
+mean(bmi, na.rm=TRUE) 
+
+# 复制向量
+bmi_impute <- bmi 
+
+# 对向量进行均值填补
+bmi_impute[is.na(bmi_impute)] <- mean(bmi_impute, na.rm=TRUE) 
+
+# 填补只会作用于（复制后的）目标向量，对初始向量无影响
+writeLines(paste0("填补后的目标向量为：", list(round(bmi_impute, 2)), "\n", "填补后的初始向量为：", list(bmi))) 
+```

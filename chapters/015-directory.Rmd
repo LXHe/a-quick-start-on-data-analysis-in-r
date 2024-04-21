@@ -1,0 +1,17 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 路径
+我们在读取文件时，可以使用文件完整的存储路径，比如`D:/a-quick-start-on-data-analysis-in-r/data/goods.xlsx`，它能帮助我们找到任意位置上的文件，这条路径被称**绝对路径（absolute directory）**。
+
+有时，文件的绝对路径很长，而且我们需要处理的文件一般都集中在特定文件夹下，这时，为了避免代码冗长，我们可以先设定一个工作路径，告诉R在查找文件时只查找存储在这个工作路径下的文件。这样，当我们要调用特定文件时，只需要调用该文件在<u>当前工作路径</u>下的路径，这条路径被称为**相对路径（relative directory）**。例如，当我们将`D:/a-quick-start-on-data-analysis-in-r`设置为工作路径，这时，如果要调用`goods.xlsx`，只需要输入路径`data/goods.xlsx`即可。
+
+我们可以使用`getwd()`函数来获取当前的工作路径，使用`setwd()`设置新的工作路径。`wd`代表`working directory`。
+
+***注意***：
+
+<li>在设置了工作路径后，数据或图片的**存储**与**读取**都会默认在<u>该工作路径</u>下进行。</li>
+<li>需要读取存储在其它路径的数据时，需要使用**绝对路径**。</li>

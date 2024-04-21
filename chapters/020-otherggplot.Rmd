@@ -1,0 +1,14 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# ggplot2其余汇总
+在指定区域添加颜色[参考链接](https://mp.weixin.qq.com/s/vN4nh6hi1udiDhHP7BfrOA)。
+
+主题模板套用[参考链接](https://zhuanlan.zhihu.com/p/29656775)。
+
+坐标轴的调整[参考链接](https://r-charts.com/ggplot2/axis/)。
+
+图例的位置调整[参考链接](https://zhuanlan.zhihu.com/p/30706933)。

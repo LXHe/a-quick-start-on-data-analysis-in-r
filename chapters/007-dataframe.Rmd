@@ -1,0 +1,33 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 数据框 
+矩阵只能包含一个种类的数据。
+```{r chapter007-dataframe-1}
+# 创建向量
+var_vector <- c(1,2,3,4,5,6)
+
+# matrix()函数生成矩阵
+var_matrix <- matrix(var_vector, nrow=2) 
+
+# 合并不同数据类型的向量与矩阵
+cbind(c("M","F"), var_matrix)
+```
+
+如上所示，当加入字符型数据后，矩阵中的数字也被**强制转变**为字符型（即被双引号包裹），这被称为**隐式强制**。因此，使用**数据框(dataframe)**可以存储不同类型的数据，保留原有数据的完整性。
+```{r chapter007-dataframe-2}
+# 调用R自带iris数据框
+data(iris) 
+
+# 查看数据类型
+class(iris) 
+
+# 查看数据框维度
+dim(iris) 
+
+# 查看数据框内的变量类型
+str(iris) 
+```

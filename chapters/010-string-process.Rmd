@@ -1,0 +1,88 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 字符串处理
+在处理数据过程中，通常会碰到<u>需要提取具有某一类特征的变量名</u>或者<u>需要从特定变量中筛选出包含某一类特征的字符串</u>的情况。**正则表达式（regular expression）**就是帮助我们<font color="red">**识别特定字符串**</font>的工具。
+
+R中可以使用`grep`函数、`grepl`函数或者调用***stringr***包的`str_view`函数进行正则表达式匹配：
+
+<li>`grep`函数返回目标字符串所在的位置（即索引值）。</li>
+<li>`grepl`函数返回逻辑向量。</li>
+<li>***stringr***包的`str_view`函数返回目标字符串，`str_detect`函数返回逻辑向量。</li>
+
+正则表达式主要依赖于元字符，其具体含义如下表：
+
+|元字符|含义|
+|:---|:---|
+|[]|匹配方括号内的任意字符（可以任意组合）|
+|[^]|匹配除方括号内字符以外的任意字符|
+|\*|匹配大于等于0个在`*`号之前的重复字符|
+|+|匹配至少1个在`+`号之前的重复字符|
+|?|匹配至多1个在`+`号之前的重复字符|
+|{n}|匹配正好n个在`{}`号之前的字符|
+|{n,}|匹配至少n个在`{}`号之前的字符|
+|{n,m}|匹配至少n个，至多m个在`{}`号之前的字符|
+|()|匹配与括号内完全相同的字符（数目与排序必须完全一致）|
+|\||匹配`|`符号前或后的字符|
+|^|`^`之后的字符位于开始端|
+|\$|`$`之前的字匹配字符位于末端|
+|\\|转义字符，用于匹配保留的元字符 `.[]*+?{}()\^$`|
+
+正则表达式也提供一些常用的字符集简写，如下表所示：
+
+|简写|含义|
+|:---|:---|
+|.|除换行符外的所有字符|
+|\\d|匹配所有数字，等同于`[0-9]`|
+|\\D|匹配所有非数字，等同于`[^0-9]`|
+|\\w|匹配所有字母、数字和下划线，等同于`[a-zA-Z0-9_]`|
+|\\W|匹配所有非字母、数字和下划线，等同于`[^a-zA-Z0-9_]`|
+|\\t|匹配水平制表符|
+|\\n|匹配换行符|
+|\\s|匹配所有空格字符（空格、制表符或换行符）|
+|\\S|匹配所有非空格字符（空格、制表符或换符行）|
+
+***注意***：
+
+<li>在R中使用正则表达式时，字符型常量中一个`\`要写成两个`\\`。</li>
+<li>使用字符集简写时，`grep`函数的`perl`参数需要被设定成`TRUE`。</li>
+
+```{r chapter010-string-grep}
+# 创建字符串向量
+var_name <- c("cn-Bmi_2014", "cn_-bMi-2015", "uk-bmi_2014", "uk-bm i_2015", "ck_bmi_2014", "ck_bmi_2015", "cn_bim_2014", "uk_bim_2014", "ck_b im_2014")
+
+# 查找包含BMI的变量
+var_name[grep("bmi|bm i", var_name, ignore.case=TRUE)]
+
+# 查找cn和uk的BMI变量
+var_name[grep("^(cn|uk)[\\w-]+bmi", var_name, ignore.case=TRUE, perl=TRUE)]
+
+# 查找ck 2014年的变量
+var_name[grep("^ck[\\w\\s-]+2014$", var_name, ignore.case=TRUE, perl=TRUE)]
+```
+
+```{r chapter010-string-stringr}
+# 调用包
+library(stringr)
+str_view(var_name, "bmi") # 大小写敏感
+
+# 默认大小写敏感，如果想忽略大小写，需要用regex(ignore_case=TRUE)说明
+str_view(var_name, regex("bmi", ignore_case=TRUE)) 
+```
+
+有时我们也会碰到在字符串的前后有空格的情况，这时我们可以用`[\\s]*`去进行正则表达式匹配或者使用***stringr***包的`str_trim()`函数移除位于字符串两端的空格。
+```{r chapter010-string-trim}
+library(stringr)
+trim_vector <- c(" the ", " good", "b  ad ")
+str_trim(trim_vector)
+```
+
+如果需要移除字符串中间的多余空格（即仅保留一个空格），可以使用`str_squish()`函数。
+```{r chapter010-string-squish}
+trim_string <- " Marry   has a  little lamb. "
+str_squish(trim_vector) # 字符串中间仅保留一个空格
+str_squish(trim_string)
+```

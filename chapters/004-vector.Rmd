@@ -1,0 +1,144 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 向量 {#chapter004-label-vector} 
+## 向量的创建
+**向量(vector)**是多个值（数字、字符或逻辑值）的组合。创建向量可以使用`c()`函数，`c`代表`concatenate`。
+
+```{r chapter004-vector-mathScore}
+math_score <- c(60,75,87,99,22,44)
+print(math_score)
+
+student_name <- c("A","B","C","D","E","F")
+print(student_name)
+```
+
+## 向量内元素的命名
+向量中的值被称为**元素(element)**。使用`names()`函数可以给向量内的元素命名。在创立向量时，也可以直接给元素命名。
+```{r chapter004-vector-name}
+# 使用 names() 函数
+names(math_score) <- student_name
+print(math_score)
+
+# 创立向量时命名
+english_score <- c("A"=85, "B"=70, "C"=42,"D"=95,"E"=39,"F"=67)
+print(english_score)
+```
+
+## 向量长度的获取
+获取向量长度可以使用`length()`函数。
+```{r chapter004-vector-length}
+length(math_score)
+```
+
+## 向量内元素的提取
+获取向量中的特定元素：
+
+<li>当知道元素名称时，可以根据元素名称获取元素。</li>
+<li>有些向量并未给元素命名，此时也可以根据**索引(index)**获取元素。</li>
+
+***注意***：
+
+<li>元素的索引从1开始，直至最后一个元素(索引为向量的长度)。</li>
+<li>当需要获取多个元素时，可以使用名称或者使用索引**切片(slice)**。</li>
+<li>当需要获取<u>连续的</u>多个元素时，使用索引切片更为方便。</li>
+
+```{r chapter004-vector-retrieve}
+# 使用元素名称获取单个元素
+math_score["A"]
+
+# 使用名称获取多个元素，注意需要使用c()生成向量
+math_score[c("A","D")]
+
+# 使用索引获取多个元素
+math_score[c(1,4,5)]
+
+# 使用索引切片获取连续的多个元素
+math_score[3:length(math_score)] # 顺序获取元素
+math_score[length(math_score):3] # 逆序获取元素
+```
+
+## 添加向量元素
+向向量添加元素可以使用`append()`函数。参数包括：
+
+<li>`vec`指目标向量，即要把元素添加到的向量。</li>
+<li>`value`指目标元素，即想要添加的元素。如果是单个元素，直接写赋值，如果是多个元素，需要使用`c()`函数。</li>
+<li>`index`是可选参数，即要把新添加的元素插入到原先向量中哪个索引位置的*后面*，默认是插入到原有向量末尾。</li>
+***注意***：需要重新赋值变量才能将新生成的向量保存。
+
+```{r chapter004-vector-insertion}
+new_score <- c(55, 89)
+# 未给定插入位置
+english_score_new <- append(english_score, new_score) 
+english_score_new
+
+# 给定插入位置
+english_score_new2 <- append(english_score, new_score, 2)
+english_score_new2
+```
+
+## 移除向量元素
+从向量移除元素可以使用 `-` 号。
+```{r chapter004-vector-remove}
+# 从english_score_new向量移除第2个索引的元素
+english_score_new[-2]
+
+#从english_score_new向量移除第2至第4个索引的元素
+english_score_new[-c(2:4)]
+
+#从english_score_new向量移除第2、5、7个索引的元素
+english_score_new[-c(2,5,7)]
+```
+
+## 按逻辑进行向量选择
+R中的逻辑运算符：
+
+|**运算符**|**含义**|
+|:---|:---|
+|＜|小于|
+|＞|大于|
+|＜=|小于等于|
+|＞=|大于等于|
+|==|等于|
+|!=|不等于|
+|%in%|包含|
+|&|和|
+|\||或|
+
+```{r chapter004-vector-logic}
+# 创建bmi向量
+bmi <- c(26.5, 22.4, NA, 25.5, 31, 27, 20, NA, 19.4, 23, 30)
+
+# 筛选BMI<24的元素
+bmi[bmi<24]
+
+# 筛选BMI>28的元素
+bmi[bmi>28] 
+
+# 筛选BMI<=20或者>=30的元素
+bmi[(bmi<=20)|(bmi>=30)] 
+
+# 筛选BMI在向量(26,27,28,29,30)内的元素
+bmi[bmi %in% c(26:30)] 
+
+# 筛选BMI在[24,30]范围内的元素
+bmi[(bmi>=24)&(bmi<=30)] 
+```
+
+## 向量的极值
+我们可以使用`max()`和`min()`函数分别获得向量的最大与最小值。
+
+我们还可以使用`which.max()`和`which.min()`函数分别获得向量的最大与最小值对应的索引值。
+
+```{r chapter004-vector-extremum}
+# max()函数默认不会排除NA
+max(bmi) 
+max(bmi, na.rm=TRUE) 
+
+# 返回最大值的索引值，这里的索引值是包含缺失值在内的索引值
+which.max(bmi) 
+which(bmi == max(bmi, na.rm=TRUE))
+```

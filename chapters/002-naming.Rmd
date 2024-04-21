@@ -1,0 +1,25 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 变量赋值
+R中变量的赋值采用`<-`(快捷键 "Alt"+"-")或者`=`完成，左侧为变量名称，右侧为赋值内容。
+变量命名时需要注意：
+
+<li>变量名称可以由字母或者点号`.`开头且**只能是**字母、数字、下划线`_`和点号`.`的组合。</li>
+<li>变量名称对大小写敏感，所以在调用时需要区分大小写。</li>
+<li>当用点号 `.` 开头时，<u>第二个字符</u><font color="red">**不能**</font>是数字。</li>
+<li>变量名称<font color="red">**不能**</font>用数字或下划线`_`开头。</li>
+<li>预留变量或者函数名称(如`TRUE`，`FALSE`，`NULL`)不能用来命名。</li>
+
+```{r chapter002-naming}
+# 给数字赋值
+price <- 2
+print(price)
+
+# 给字符赋值
+greeting <- "Hello!"
+print(greeting)
+```

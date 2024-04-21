@@ -1,0 +1,88 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 数据导入
+## CSV文件读取
+CSV（comma-separated values）文件是以`.csv`结尾的文件，文件中的数据以`,`分隔，每一行代表一条记录。如
+
+![](images/chapter013-csv.png)
+
+读取csv文件或者以类似格式存储数据的txt文件时，可以使用`read.csv()`函数。
+
+***注意***：在输入文件路径时，需要使用`\\`或者`/`。
+
+```{r chapter013-load-csv}
+# 读取数据
+wine_df <- read.csv("data/wine.csv") # 或者 read.csv("data\\wine.csv")
+
+# 显示前5行记录
+head(wine_df, 5)
+```
+
+在上例中可以看到，`read.csv()`默认将第一行记录读取为变量名。如果不将第一行读取为变量名 ，可以声明参数`header=FALSE`，这时，变量名将自动生成（“V1”,“V2”...）。
+
+```{r chapter013-load-csv-2}
+# 读取数据
+wine_df <- read.csv("data/wine.csv", header=FALSE)
+
+# 显示前5行记录
+head(wine_df, 5)
+```
+
+有些文件中的数据会以`,`当做千位分隔符，数据以`;`分隔，这时可以用`read.csv2()`函数。
+
+```{r chapter013-load-csv-3}
+# 读取数据
+revenue_df <- read.csv2("data/revenue.txt")
+
+# 显示前5行记录
+head(revenue_df, 5)
+```
+
+## excel文件读取
+
+excel文件的读取可以使用`readxl`包的`read_excel()`函数。此函数默认读取第一个工作表，如果需要读取特定工作表，可以声明`sheet`变量。
+
+```{r chapter013-excel}
+# 加载包
+library(readxl)
+
+# 读取数据
+goods_df <- read_excel("data/goods.xlsx")
+
+# 显示前5行记录
+head(goods_df,5)
+```
+
+读取一个excel文件中的多个工作表。
+
+```{r chapter013-excel-2}
+# 返回"goods.xlsx"工作表名称
+sheets <- excel_sheets("data/goods.xlsx") 
+
+# 读取每个工作表为数据框并返回列表
+multi_df <- lapply(sheets, function(x){read_excel("data/goods.xlsx", sheet=x)}) 
+
+# 给列表的元素命名
+names(multi_df) <- sheets 
+
+# 查看生成的列表长度（每个元素对应一个工作表）
+length(multi_df) 
+
+# 显示Year2020工作表前5行记录
+head(multi_df$Year2020,5) 
+```
+
+## 文件读取汇总
+
+| 文件类型                     | 调用包         | 读取函数     |
+|:-----------------------------|:---------------|:-------------|
+| CSV文件（\*.csv）            | utils（R自带） | read.csv()   |
+| TXT文件（\*.txt）            | utils（R自带） | read.csv()   |
+| excel文件（\*.xlsx或\*.xls） | readxl         | read_excel() |
+| SAS文件（\*.sas7bdat）       | haven          | read.sas()   |
+| SPSS文件（\*.sav）           | haven          | read.sav()   |
+| STATA文件（\*.dta）          | haven          | read_dta()   |

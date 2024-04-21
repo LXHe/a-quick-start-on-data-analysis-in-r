@@ -1,0 +1,32 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 数据类型
+R的基本数据类型包括三种：**数字(numeric)**、**字符(character)**和**逻辑(logical)**。
+
+既可以使用`class()`函数查看变量的数据类型，也可以使用`is.character()`，`is.numeric()`判断数据类型。
+
+将一种变量类型更改为另一种类型，可使用`as.*`函数，即`as.numeric()`，`as.character()`，`as.logical()`
+
+```{r chapter003-vartype}
+# 数字：浮点数或者整数
+bmi <- 26.6
+print(class(bmi))
+
+# 字符：用引号引用的文字或者数字
+str_name <- "Tom"
+print(class(str_name))
+str_age <- "20"
+print(class(str_age))
+
+# 逻辑：“是”/“否”的判断
+is.character(bmi) # 返回值为FALSE
+is.character(str_name) # 返回值为TRUE
+
+# 改变变量类型
+as.numeric(str_age) 
+as.logical(1) # 数字1为TRUE，0为FALSE
+```

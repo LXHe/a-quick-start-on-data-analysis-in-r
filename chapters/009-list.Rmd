@@ -1,0 +1,46 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 列表
+**列表（list）**是R语言的对象集合，可以用来保存不同类型的数据，使用`list()`函数创建。与`c()`函数[小节\@ref(chapter004-label-vector)]不同，`list()`函数保留输入数据最初的数据结构，而`c()`函数将所有输入数据降维放入一个向量中。使用`unlist()`函数可以将列表转变为向量。
+
+```{r chapter009-list}
+test_list <- list(c("a","b","c"), 23, matrix(c(1,2,3,4),nrow=2)) 
+length(test_list) 
+
+test_vector <- c(c("a","b","c"), 23, matrix(c(1,2,3,4),nrow=2)) 
+length(test_vector)
+
+length(unlist(test_list)) # 使用`unlist()`函数将列表转变为向量
+```
+
+在获取列表元素时，如果采用`[]`+索引值的方式，返回的结果为包含该元素的<u>列表</u>。如果需要将列表元素提取为<u>向量</u>，则需采用`[[]]`+索引值的方式。如果列表的元素有名称，可以采用`$`或`[[]]`+名称的方式调用。
+
+向列表添加元素可以使用`append()`函数。
+
+***注意***：如果需要将**整个向量**添加进原有列表中，必须先将向量转为列表形式，否则R会将向量中的元素<u>逐个添加</u>为列表的元素。
+```{r chapter009-list-retrieve}
+# 使用[[]]获取列表中的元素
+test_list[[1]] 
+
+# 如果列表的元素有名称，可以采用`$`调用
+# 给列表的元素命名
+names(test_list) <- c("vec", "n", "mtx") 
+
+# 使用"$+名称"调用列表元素
+test_list$vec 
+
+# 使用"[[名称]]"调用列表元素
+test_list[["vec"]] 
+```
+
+```{r chapter009-list-retrieve-2}
+# 整个添加向量
+append(test_list, list(c(FALSE, FALSE, TRUE))) 
+
+# 逐个添加向量元素
+append(test_list, c(FALSE, FALSE, TRUE)) 
+```

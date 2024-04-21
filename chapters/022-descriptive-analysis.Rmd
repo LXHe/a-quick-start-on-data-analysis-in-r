@@ -1,0 +1,28 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 描述性统计
+## 分类变量的描述性统计
+分类变量的频数分布表可以用`tabulate()`结合`match()`函数实现。我们以
+```{r chapter022-categorical-describe}
+# 创建向量
+gender_vector <- rep(c("M","F","M"), times=3)
+
+# 提取无重复的元素
+gender_unique <- unique(gender_vector)
+
+# 生成频数分布表
+gender_freq <- tabulate(match(gender_vector, gender_unique))
+
+for (i in seq(gender_unique)){
+  print(paste0("元素 ", gender_unique[i], " 的频数为：", gender_freq[i]))
+}
+```
+## 连续变量的描述性统计
+连续变量的描述可以用`mean()`，`sd()`等函数实现，这些函数在之前都有介绍，这里不做赘述。
+```{r}
+data(heart)
+```

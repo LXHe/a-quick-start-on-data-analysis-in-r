@@ -1,0 +1,8 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 相关性分析
+## 分类变量的相关性分析

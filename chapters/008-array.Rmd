@@ -1,0 +1,24 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 数组 
+**数组（array）**是矩阵的扩展，可以将矩阵扩展至2维以上。1维数组相当于向量[小节\@ref(chapter004-label-vector)]，2维数组相当于矩阵[小节\@ref(chapter006-label-matrix)]。R中使用`array()`函数创建数组，主要的参数为：
+
+<li>`X`输入数据，可以是向量或者矩阵。</li>
+<li>`dim`输出维度，如果输出多维度，使用`c(m,n,k,..)`，其中m×n为最内层矩阵。</li>
+
+```{r chapter008-array}
+# 创建3×6维的数组
+var_array1 <- array(seq(1:18), dim=c(3,6)) 
+var_array1
+
+# 创建3×2×3维的数组 
+var_array2 <- array(seq(1:18), dim=c(3,2,3)) 
+var_array2
+
+# 获取第3层的矩阵
+var_array2[,,3] 
+```

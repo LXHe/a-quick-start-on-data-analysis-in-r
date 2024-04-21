@@ -1,0 +1,63 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 矩阵 {#chapter006-label-matrix} 
+## 矩阵的介绍 
+**矩阵(matrix)**是m×n个数按照m行n列的方式排列形成的数表。R中的矩阵(matrix)可以通过`matrix()`函数、`cbind()`或`rbind()`函数生成。
+
+<li>`matrix()`函数用于将向量转变为m×n的矩阵，输入向量的长度必须等于m×n。</li>
+<li>`cbind()`函数指`column bind`，即**列**的叠加，要求输入的向量或矩阵的**行数**相同。</li>
+<li>`rbind()`函数指`row bind`，即**行**的叠加，要求输入的向量或矩阵的**列数**相同。</li>
+
+```{r chapter006-matrix}
+# 创建向量
+var_vector <- c(1,2,3,4,5,6)
+
+# matrix()函数生成矩阵
+var_matrix <- matrix(var_vector, nrow=2) 
+var_matrix
+
+# 列叠加
+cbind(var_matrix, var_matrix)
+
+# 行叠加
+rbind(var_matrix, var_matrix)
+```
+
+## 矩阵的转置 
+矩阵的转置使用`t()`函数,`t`指`transpose`。
+```{r chapter006-matrix-transpose}
+t(var_matrix)
+```
+
+## 矩阵元素的提取 
+矩阵中元素的提取采用`[行索引,列索引]`的方式。
+```{r chapter006-matrix-retrieve}
+# 提取第1行第2列的元素
+var_matrix[1,2] 
+
+# 提取第1行第2、3列的元素
+var_matrix[1,c(2,3)] 
+
+# 提取第1行的所有元素
+var_matrix[1,]
+
+# 提取第2列的所有元素
+var_matrix[,2] 
+```
+
+## 矩阵维度的获取 
+采用`dim()`函数（`dim`指`dimension`）获取矩阵的维度，`nrow()`函数获取矩阵的行数，`ncol()`函数获取矩阵的列数。
+```{r chapter006-matrix-dim}
+# 获取维度
+dim(var_matrix)
+
+# 获取行数
+nrow(var_matrix)
+
+# 获取列数
+ncol(var_matrix)
+```
