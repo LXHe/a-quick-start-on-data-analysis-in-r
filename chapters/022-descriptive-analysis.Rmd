@@ -6,23 +6,49 @@ output:
 
 # 描述性统计
 ## 分类变量的描述性统计
-分类变量的频数分布表可以用`tabulate()`结合`match()`函数实现。我们以
-```{r chapter022-categorical-describe}
-# 创建向量
-gender_vector <- rep(c("M","F","M"), times=3)
+### 频数分布表 
+分类变量的频数分布表可以用`xtabs()`函数实现。我们以[UCI心脏病数据集](https://www.kaggle.com/code/imabhilash/heart-disease-uci)做演示。
+```{r chapter022-categorical-freq, message=FALSE}
+library(tidyverse)
+# 读取数据
+heart_df <- read_csv("data/heart.csv")
 
-# 提取无重复的元素
-gender_unique <- unique(gender_vector)
+# 展示前6行数据
+heart_df %>% head()
 
-# 生成频数分布表
-gender_freq <- tabulate(match(gender_vector, gender_unique))
+# 生成fbs频数分布表
+xtabs(formula = ~fbs, data = heart_df)
+# 或者使用
+xtabs(formula = ~heart_df$fbs)
 
-for (i in seq(gender_unique)){
-  print(paste0("元素 ", gender_unique[i], " 的频数为：", gender_freq[i]))
-}
+# 生成sex和fbs的列联表
+xtabs(formula = ~sex+fbs, data = heart_df)
 ```
+
+### 计算百分比与合计数
+我们可以使用`prop.tabls()`函数计算列联表的计数百分比，使用`margin.table()`或者`addmargins()`函数按行或列对计数进行合计。
+```{r chapter022-categorical-prob}
+# 计算百分比
+prop.table(xtabs(formula = ~sex+fbs, data = heart_df))
+
+# 按行进行合计
+margin.table(xtabs(formula = ~sex+fbs, data = heart_df), margin = 1)
+
+# 按列进行合计
+margin.table(xtabs(formula = ~sex+fbs, data = heart_df), margin = 2)
+
+# 同时按行和列进行合计
+addmargins(xtabs(formula = ~sex+fbs, data = heart_df))
+```
+
+### 四格表与RC列联表 {#chapter022-label-crosstab}
+当两个分类变量分别包含两个水平时，做出来的2×2表格有四个格子，因此被称为**四格表**。四格表存在独立样本和配对样本两种情况。对于不同的情况，需要采用不同的分析方法。
+
+<div><img src="images/chapter022-crosstab-single.png" width=80% height=60%></div>
+
+当两个分类变量包含多个水平时，做出来包含多行多列的表格被称为**RC列联表**。行和列的变量都不是有序变量时，被称为**双向无序**；只有一个是有序变量时，被称为**单向有序**；两个都是有序变量时，被称为**双向有序**。
+
+<div><img src="images/chapter022-crosstab-double.png" width=80% height=70%></div>
+
 ## 连续变量的描述性统计
 连续变量的描述可以用`mean()`，`sd()`等函数实现，这些函数在之前都有介绍，这里不做赘述。
-```{r}
-data(heart)
-```

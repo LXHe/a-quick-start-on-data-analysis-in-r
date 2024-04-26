@@ -4,7 +4,7 @@ output:
   html_document: default
 ---
 
-# 数据框 
+# 数据框 {#chapter007-label-dataframe}
 矩阵只能包含一个种类的数据。
 ```{r chapter007-dataframe-1}
 # 创建向量

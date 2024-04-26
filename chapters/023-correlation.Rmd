@@ -6,3 +6,416 @@ output:
 
 # 相关性分析
 ## 分类变量的相关性分析
+### 概述
+分类变量的相关性分析本质是分析实际观测值和理论推断值之间的偏离程度。在完成分类变量的相关性分析（独立性检验）后，对于有相关性的变量，我们还会对相关性的具体程度感兴趣，因此也会进行相关性的度量。具体的分析方法与列联表类型[小节\@ref(chapter022-label-crosstab)]有关：
+
+|列联表类型|独立性检验|相关性度量|
+|:---|:---|:---|
+|[独立样本四格表](https://zhuanlan.zhihu.com/p/27312651)|卡方检验<br>Fisher's精确检验|Pearson列联系数<br>$\varphi$系数|
+|[配对样本四格表](https://zhuanlan.zhihu.com/p/27312651)|McNemar检验||
+|[单向有序列联表（分组有序）](https://zhuanlan.zhihu.com/p/27513481)|卡方检验|Pearson列联系数<br>Cramer's V系数|
+|[单向有序列联表（结果有序）](https://zhuanlan.zhihu.com/p/27513481)|秩和检验|Gamma系数<br>Kendall's tau-b相关系数<br>Kendall's tau-c相关系数|
+|[双向无序列联表](https://zhuanlan.zhihu.com/p/27220146)|卡方检验<br>Fisher's精确检验|Pearson列联系数<br>Cramer's V系数|
+|双向有序列联表（不同属性）|[Spearman相关分析](https://zhuanlan.zhihu.com/p/27671357)<br>[Kendall's $\tau$相关分析](https://zhuanlan.zhihu.com/p/27799592)|Spearman秩相关系数<br>Gamma系数<br>Kendall's tau-b相关系数<br>Kendall's tau-c相关系数|
+|双向有序列联表（属性相同）|[McNemar-Bowker检验](https://zhuanlan.zhihu.com/p/27927958)||
+
+卡方检验（$\chi^2$ test）和Fisher's精确检验（Fisher's exact test）的选择与列联表类型[小节\@ref(chapter022-label-crosstab)]、样本总量和期望频数有关：
+
+<table>
+  <tr>
+    <th>列联表类型</th>
+    <th>应用条件</th>
+    <th>检验方法</th>
+    <th>函数语法</th>
+  </tr>
+  <tr>
+    <td rowspan="3">四格表
+    </td>
+    <td>样本总量≥40 且 期望频数≥5
+    </td>
+    <td>Pearson卡方检验
+    </td>
+    <td>chisq.test(correct=FALSE)
+    </td>
+  </tr>
+  <tr>
+    <td>样本总量≥40 且 1≤期望频数＜5
+    </td>
+    <td>连续性校正的卡方检验
+    </td>
+    <td>chisq.test(correct=TRUE)(默认参数)
+    </td>    
+  </tr>
+  <tr>
+    <td>样本总量＜40 或 任意格子期望频数＜1
+    </td>
+    <td>Fisher's精确检验
+    </td>
+    <td>fisher.test()
+    </td>
+  </tr>
+  <tr>
+    <td rowspan="2">RC列联表
+    </td>
+    <td>期望频数＜5的格子不超过总格子数的$\frac{1}{5}$ 且 所有格子的期望频数≥1
+    </td>
+    <td>Pearson卡方检验
+    </td>
+    <td>chisq.test(correct=FALSE)
+    </td>
+  </tr>
+  <tr>
+    <td>期望频数＜5的格子超过总格子数的$\frac{1}{5}$ 或 任意格子的期望频数＜1
+    </td>
+    <td>Fisher's精确检验
+    </td>
+    <td>fisher.test()
+    </td>
+  </tr>
+</table>
+
+有时两个分类变量的关联可能受到第三个变量的影响，因此当我们在分析两个分类变量的相关性时，有时需要**控制其它的分类变量**，这时需要用Cochran-Mantel-Haenszel检验（CMH检验）。
+
+### 卡方检验
+卡方检验的通用公式为：
+$$
+\chi^2 = \sum \frac{|观察频数 - 期望频数|^2}{期望频数}
+$$
+
+四格表卡方值的快速计算公式（即拟合度公式）为：
+$$
+\chi^2 = \frac{n(ad - bc)^2}{(a + b)(c + d)(a + c)(b + d)}
+$$
+其中，n = a + b + c + d
+
+卡方值（$\chi^2$）越大，代表实际观测值和理论推断值的偏离程度越大；反之亦然。当两者完全相等时，卡方值为0。
+
+卡方检验可以用来进行：
+
+1. 拟合优度检验：即检验一组给定数据与指定分布的[拟合程度](https://zhuanlan.zhihu.com/p/576009139)。比如，我们想要知道数据的分布是否符合某种分布类型；特定人群对若干种干预方案的喜好是否有差异。
+2. 独立性检验：即同一个样本中的两个分类变量之间是否具有相关性。
+
+#### 拟合优度检验
+**例** 假设我们收集了90名老年人对A、B、C三种运动干预方案的选择，我们想知道老年人对这三种干预方案的选择是否有差异。这时可以使用`chisq.test()`函数来实现。
+```{r chapter023-chisq-fit, message=FALSE}
+# 创建数据框
+preference_df <- data.frame(
+  ID = 1:90,
+  preference = c(rep("A",45), rep("B",20), rep("C",25))
+)
+
+# 生成频数分布表
+pref_tab <- xtabs(formula = ~preference, data = preference_df)
+
+# 拟合优度检验
+chisq.test(pref_tab)
+```
+
+在汇报卡方检验结果时，需要写成 $\chi^2$(自由度,样本量) = 卡方值，P值 的形式。
+
+例如，上例的结果需要表达为：$\chi^2$(2,90) = 11.667, P = 0.003。
+
+根据上例的结果，我们可以发现P值小于0.05，因此认为老年人对这三种干预方案的选择是有差异的。
+
+要进一步比较是哪两种干预方案之间的选择有差异，我们可以进行两两比较。
+```{r chapter023-chisq-fit-compare, message=FALSE}
+library(tidyverse)
+# 获取preference水平
+preference_unique <- unique(preference_df$preference)
+
+# 使用循环语句进行配对比较
+for (i in seq(length(preference_unique))) {
+  # 生成不包含第i个preference水平的子数据
+  subset_df <- preference_df %>% filter(preference != preference_unique[i])
+  
+  # 生成频数分布表
+  subset_pref_tab <- xtabs(formula = ~preference, data = subset_df)
+  
+  # 拟合优度检验
+  chisq_result <- chisq.test(subset_pref_tab)
+  
+  # 报告结果
+  print(
+    paste0(
+      "P value of comparison between level ", 
+      paste(preference_unique[-i], collapse = " and "), # 合并剩下的preference水平
+      " is: ",
+      round(chisq_result$p.value, 4) # 报告P值
+    )
+  )
+}
+```
+可以看到，A方案的选择人数与剩下两个方案的选择人数之间是有显著差异的。
+
+***注意***：
+<li>拟合优度检验使用了大样本的性质，要求样本容量足够大，一般来说样本量≥30。</li>
+<li>各区间的理论频数不能太小，至少为5。如果未达到标准，可以重新调整划分区间。</li>
+
+#### 独立性检验
+**例** 我们将以[UCI心脏病数据集](https://archive.ics.uci.edu/dataset/45/heart+disease)为例，分析`exang`（运动诱发心绞痛）与`target`（心脏病）的相关性。
+```{r chapter023-chisq-compare}
+# 读取数据
+heart_df <- read_csv("data/heart.csv")
+
+# 建立列联表
+cross_table <- xtabs(formula = ~exang+target, data = heart_df)
+
+# 卡方检验
+chisq_result <- chisq.test(cross_table)
+```
+
+在生成的结果列表`chisq_result`中一共包含9个元素，其中名为`expected`的元素便是期望频数。
+
+<div align=center> <img src="images/chapter023-chisq.png" width=80% height=80%> </div>
+
+```{r chapter023-chisq-expected, message=FALSE}
+# 查看期望频数
+chisq_result$expected
+```
+
+由于样本总量≥40且期望频数≥5，所以选择Pearson卡方检验，声明参数`correct=FALSE`。
+```{r chapter023-chisq-pearson, message=FALSE}
+chisq.test(cross_table, correct=FALSE)
+```
+
+### Fisher's精确检验
+Fisher's精确检验的基本思想是在四格表周边合计数（a+b）、(c+d)、(a+c)、(b+d)不变的条件下，计算表内a、b、c、d，4个频数变动时的各种组合的概率$P_i$；再按检验假设用单侧或双侧的累计概率P，依据所取的检验水准α进行判断。
+
+各组合的概率$P_i$服从超几何分布：
+$$
+p_i = \frac{(a + b)!(c + d)!(a + c)!(b + d)!}{a!b!c!d!n!}
+$$
+其中，n = a + b + c + d
+
+还是以四格表为例，我们简要说明一下$P_i$公式是如何得来的：
+
+||变量1：水平1|变量1：水平2|列合计|
+|:---|:---|:---|:---|
+|变量2：水平1|a|b|a+b|
+|变量2：水平2|c|d|c+d|
+|行合计|a+c|b+d|n|
+
+首先，我们需要保证在`变量1：水平1`这一列的总数`a+c`不变的情况下，满足`变量1：水平1`和`变量2：水平1`的样本数为a，则有$C_{a+c}^a$种方法。接着，我们需要保证在`变量1：水平2`这一列的总数`b+d`不变的情况下，满足`变量1：水平2`和`变量2：水平1`的样本数为b，则有$C_{b+d}^b$种方法。最后，在`变量2：水平1`这一行的样本可以随机组合，有(a+b)!种方法；在`变量2：水平2`这一行的样本可以随机组合，有(c+d)!种方法。这就是满足当前样本分布的组合数。而n个样本随机组合一共有n!种方法，所以最终出现当前样本分布的概率为：
+$$
+\frac{C_{a+c}^aC_{b+d}^b(a + b)!(c + d)!}{n!} = \frac{(a + b)!(c + d)!(a + c)!(b + d)!}{a!b!c!d!n!}
+$$
+
+需要注意的是，卡方检验是右侧单尾检验，而Fisher's精确检验可以是单尾或者双尾检验。当我们将a由小到大排列时，会得到不同取值下的组合概率$P_i$。如果我们实际观察到的组合中满足`变量1：水平1`和`变量2：水平1`的样本数为A，Fisher's精确检验的左侧单尾指的是所有不大于A的组合的累积概率，即$\sum P_{(i|a \leq A)}$。同理，Fisher's精确检验的右侧单尾指的是所有不小于A的组合的累积概率，即$\sum P_{(i|a \geq A)}$。而Fisher's精确检验的双尾指的是所有不等于A的组合的累积概率，即$\sum P_{(i|a \neq A)}$。
+
+同时我们也可以看到，虽然Fisher's精确检验更加准确，但计算成本更高。因此，与卡方检验相比，Fisher's精确检验更适用于样本量较小情况下的两个分类变量间的相关性检验。
+
+Fisher's精确检验可以使用`fisher.test()`函数来实现，默认为双尾检验，如果需要调整假设检验方式，可以声明`alternative`参数。
+
+**例** 某机构为研究某药物A对I级高血压的控制效果，将32例I级高血压的患者随机分成用药组（17人）和非用药组（15人），得到药物A的控制效果数据如下：
+
+|组别|血压已控制|血压未控制|合计|
+|:---|:---|:---|:---|
+|用药组|13|4|17|
+|非用药组|7|8|15|
+|合计|20|12|32|
+
+由于样本量小于40，所以我们需要用Fisher's精确检验来检验药物A是否有效。
+```{r chapter-023-fisher}
+# 创建列联表
+bp_cross_table <- matrix(c(13,7,4,8), nrow = 2) # 注意matrix默认为"Fortran"排列，即纵向排列
+
+# 设置列联表行列名
+rownames(bp_cross_table) <- c("drug", "no-drug")
+colnames(bp_cross_table) <- c("controlled", "not-controlled")
+
+# 运行Fisher's精确检验
+fisher.test(bp_cross_table)
+```
+
+所得P = 0.144＞0.05，所以认为用药组与非用药组的效果相等，即药物A对血压的控制效果并不显著。
+
+### Cochran-Mantel-Haenszel检验
+在进行分类变量的关联性分析时，有时候会出现两个分类变量（变量A和变量B）的总体关联性是一种情况，但是当基于第三个分类变量（变量C）分层后，在进行分类变量的关联性分析，这时的关联性消失或者出现跟之前总体关联性结果相反的情况，这种现象被称为**辛普森悖论**（[Simpson's Paradox](https://zhuanlan.zhihu.com/p/348967975)）。
+
+**例** 我们来看一个例子，现在有两种药物对肺癌的总体治愈率数据，如下所示：
+
+|药物类型|治愈人数|未治愈人数|治愈率|
+|:---|:---|:---|:---|
+|药物A|900|100|90%|
+|药物B|800|200|80%|
+
+我们可以看到，药物A的治愈率为90%，高于药物B的治愈率，所以药物A的对肺癌的治疗效果比药物B似乎更胜一筹。但是如果我们将患者按照性别进行划分后，重新计算各药物对肺癌的治愈率，会得到如下结果：
+
+|药物类型|性别|治愈人数|未治愈人数|治愈率|
+|:---|:---|:---|:---|:---|
+|药物A|男性|870|30|96.7%|
+|药物A|女性|30|70|30%|
+|药物B|男性|680|20|97.1%|
+|药物B|女性|120|180|40%|
+
+这样看来，不论是在男性还是在女性患者中，药物B对肺癌的治愈率都高于药物A，这与总体治愈率数据相矛盾。
+
+为什么会出现这种情况呢？我们来剖析一下总体和性别分层的治愈率是怎样计算的：
+
+|药物类型|男性|女性|总治愈率|
+|:---|:---|:---|:---|
+|药物A|$\frac{870}{900}$ $\frac{q_1}{p_1}$|$\frac{30}{100}$ $\frac{q_3}{p_3}$|$\frac{870 + 30}{900 + 100}$ $\frac{q_1 + q_3}{p_1 + p_3}$|
+|药物B|$\frac{680}{700}$ $\frac{q_2}{p_2}$|$\frac{120}{300}$ $\frac{q_4}{p_4}$|$\frac{680 + 120}{700 + 300}$ $\frac{q_2 + q_4}{p_2 + p_4}$|
+
+我们可以发现，各性别分层的权重不同会影响总治愈率，因此如果要使总治愈率出现反转，需要有三个特征：
+
+1. 各分层的分母（即药物A中的$p_1$与$p_3$、药物B中的$p_2$与$p_4$）相差较大，这就保证了总治愈率主要基于分母较大的分层治愈率。
+2. 各个分层治愈率之间有较大差异，这就保证了分层治愈率的权重改变对总治愈率的影响程度。如果分层治愈率之间无太大差异，则药物A、B中各分层权重的差异对总治愈率不会有太大影响。
+3. 各分层的分母比率（即药物A中的$p_1$:$p_3$、药物B中的$p_2$:$p_4$）有明显差异，这就保证了分层治愈率对总治愈率的实际影响程度。分母较大一方的占比越高，则总治愈率越接近分母较大一方的分层治愈率；反之，总治愈率会向分母较小一方的分层治愈率倾斜。
+
+上面的例子告诉我们，总体的关联性趋势不一定能反映分层后的关联性分析趋势，这是因为存在一些混杂因素的影响。因此我们在进行数据分析的过程中需要警惕**辛普森悖论的存在**，不仅要关注数据的整体趋势，还要注意到各个子集内部的趋势。
+
+虽然我们可以按照变量C的各个水平，分别进行变量A和变量B的卡方检验。但是，有时我们只是想在控制变量C的情况下去看变量A与B的关联性，这时就需要用到Cochran-Mantel-Haenszel检验（CMH检验）。CMH检验假设在变量C的各个水平上，变量A和B都是条件独立的，也即变量C的各个水平上的变量A之间以及各个水平上的变量B之间不会相互影响。CMH检验的是基于公共的优势比进行的，具体计算可参考[此链接](https://blog.csdn.net/nixiang_888/article/details/117842865)。
+
+我们继续根据上面的例子，使用`mantelhaen.test()`函数完成CMH检验。这时需要生成三变量的列联表。在制备列联表时，需要将控制变量C放在最外层。如果是使用`xtabs()`函数生成列联表时，控制变量C应该放在`formula`参数的最后一位，即`formula = ~变量A+变量B+变量C`。
+```{r chapter023-cmh}
+values <- c(870,680,30,20,30,120,70,180) # 计数向量
+row.names <- c("drug A", "drug B") # 行标题
+col.names <- c("cured", "uncured") # 列标题
+matrix.names <- c("male", "female") # 第三个维度的标题
+
+lung_cancer <- array(values, dim = c(2,2,2), dimnames = list(row.names,col.names,matrix.names)) # 创建列联表
+
+# 查看列联表
+lung_cancer
+
+# CMH检验
+mantelhaen.test(lung_cancer)
+```
+所得P = 0.1025大于0.05，因此认为药物A、B对肺癌治疗效果无显著性差异。
+
+### 相关性的度量
+当我们知道了分类变量之间有相关性后，也会对相关性的强弱感兴趣。相关性的强弱便是相关性度量，常用指标包括：
+
+1. Phi($\varphi$)系数：
+
+只适用于四格表，范围为[0,1]。计算公式为 $\varphi = \sqrt{\frac{\chi^2}{n}}$ 。phi系数小于0.3时，相关性较弱；phi系数大于0.6时，表示相关较强。
+
+2. Pearson列联系数（C系数）：
+
+计算公式为 $C = \sqrt{\frac{\chi^2}{\chi^2 + n}}$ 。范围为[0,1]，值越大表明两变量之间的相关性越强；适合**行、列数相同**的列联表。
+
+3. Cramer's V系数：
+
+是对Pearson列联系数的修正，计算公式为 $V = \sqrt{\frac{\chi^2}{n \times \min[(r-1),(c-1)]}}$ 。范围为[0,1]，值越大表明两变量之间的相关性越强；适用于**行、列数不同**的列联表。
+
+我们可以使用`vcd`包中的`assocstats()`函数完成对列联表中两个分类变量相关性的度量。
+```{r chapter023-categorical-correlation, message=FALSE}
+library(vcd)
+# 以卡方检验的列联表为例做演示
+assocstats(cross_table)
+```
+
+### McNemar检验 {#chapter023-label-mcnemar}
+我们有时需要对同一研究对象（如同一患者的肿瘤细胞）或两两匹配对象（如同胎、同体重的小鼠）分别予以两种不同的处理方式，亦或进行某处理方式前后的效果比较。前者用于推断两种处理方式的效果是否有差别，后者用于推断特定的处理方式是否有效果。这时我们可以使用McNemar检验。
+
+<div><img src="images/chapter023-mcnemar-1.png" width=60% height=60%></div>
+
+McNemar检验主要关注两种处理方式（或某种处理方式前后）的不一致数目（b和c）是否有很大的差异。其卡方值计算公式为：
+
+$$
+\chi^2 = \frac{(b - c)^2}{b + c}, \nu = 1
+$$
+
+McNemar检验可以通过`mcnemar.test()`函数实现。此函数默认使用校正，当<font color="red">b+c≥40</font>时，不需要使用校正，此时需要声明参数`correct=FALSE`。
+
+**例** 某实验室分别用乳胶凝集法和免疫荧光法对220名疑似系统性红斑狼疮患者血清中核抗体进行测定，结果如下，分析两种方法的检测结果是否有差别。
+<div><img src="images/chapter023-mcnemar-2.png" width=60% height=60%></div>
+
+```{r chapter023-mcnemar}
+# 创建数据框
+mcnemar_df <- data.frame(
+  LAT = rep(c(1,0), times=c(123,97)),
+  IF = c(rep(c(1,0), times=c(84,39)), rep(c(1,0), times=c(21,76)))
+)
+
+# 创建列联表
+mcnemar_crosstab <- xtabs(formula = ~ LAT + IF, data = mcnemar_df)
+
+# 进行mcnemar检验
+mcnemar.test(mcnemar_crosstab, correct = FALSE)
+```
+
+结果显示P=0.02＜0.05，因此这两种方法的检测结果是有显著差别的。
+
+***注意***：
+
+<li>McNemar检验的两组变量必须是无序分类变量。对于配对样本多水平有序分类变量的检验可以考虑Wilcoxon符号秩和检验。</li>
+<li>由于McNemar检验只关注两个分类变量的不一致结果，当a、d的量级显著高于b、c的量级时，也有可能出现检验结果不显著的情况，此时需要引起警惕。</li>
+
+### 一致性检验
+对于配对样本而言，有时我们不光想知道两种处理方式是否具有相关性，我们还想知道这两种处理方式的结果是否是一致的，这时就需要一致性检验。一致性与相关性的区别如下：
+```{r chapter023-concordance, echo=FALSE, fig.height=5, fig.width=5}
+df_plot <- data.frame(
+  obs1 = c(1,1,2,3,3,6,8,9,9,10,12,13,13,14,15),
+  obs2 = c(2,2,2,4,4,5,5,5,6,7,7,8,8,9,9)
+)
+
+ggplot(
+  df_plot, 
+  aes(x = obs1, y = obs2)
+) +
+geom_point(
+  shape = 16, 
+  size = 2,
+  color = "#80c97f"
+) +
+geom_smooth(
+  formula = "y~x", 
+  method = "lm", 
+  se = FALSE
+) +
+geom_abline(
+  slope = 1,
+  intercept = 0,
+  linetype = "dashed"
+) +
+annotate(
+  "text",
+  x = 10, 
+  y = 9, 
+  label = "一致性"
+) +
+annotate(
+  "text",
+  x = 14, 
+  y = 8, 
+  label = "相关性",
+  color = "blue"
+) +
+scale_y_continuous(
+  breaks = seq(2,10,2),
+  limits = c(0,10),
+  expand = c(0,0)
+) +
+scale_x_continuous(
+  breaks = seq(2,16,2),
+  limits = c(0,16),
+  expand = c(0,0)
+) + 
+labs(
+  x = "医生评分",
+  y = "仪器评分"
+) +
+theme_bw()
+```
+
+Cohen's Kappa分析常被用于[配对样本四格表](https://zhuanlan.zhihu.com/p/27312651)的一致性检验，Kappa值的范围为[-1,1]。比如我们根据实际的观测值[小节\@ref(chapter023-label-mcnemar)]，可以计算出要比较的两种处理方式（或特定处理方式的处理前后效果）的实际结果一致的比率：$P_0 = \frac{a + d}{n}$
+
+但是，这里面的一致比率还包括在完全随机的情况下会出现的结果一致的比率，即$P_e = \frac{(a + b)(a + c) + (c + d)(b + d)}{n^2}$
+
+这时，如果我们计算$P_0$与$P_e$的差值在最理想状态（即结果完全一致）与$P_e$的差值的占比，就能够较好地反映实际结果一致性，这个计算出来的比值就是Kappa值，即$\kappa = \frac{P_0 - P_e}{1 - P_e}$
+
+Kappa值为-1，代表结果完全不一致；为0，代表结果是随机出现的；为1，代表结果完全一致。一般而言，Kappa值≤0.4时，表明一致性较差；在(0.4,0.6]范围时，表明一致性中等；在(0.6,0.8]范围时，表明一致性较好；＞0.8时，表明一致性极好。
+
+对于双向有序列联表（属性相同）的一致性检验，通常采用[Fleiss' Kappa分析](https://zhuanlan.zhihu.com/p/27999963)。
+
+**例** 依旧基于McNemar检验[小节\@ref(chapter023-label-mcnemar)]中乳胶凝集法和免疫荧光法评价的例子，我们来进行Cohen's Kappa分析，这时需要用到`irr`包的`kappa2()`函数。
+```{r chapter023-kappa, message=FALSE}
+library(irr)
+
+# 直接使用数据框即可计算
+kappa2(mcnemar_df)
+```
+
+计算得到的Kappa值为0.457，Z值小于0.05，说明两种方法的结果是不一致的。

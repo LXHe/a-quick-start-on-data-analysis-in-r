@@ -12,3 +12,5 @@ output:
 坐标轴的调整[参考链接](https://r-charts.com/ggplot2/axis/)。
 
 图例的位置调整[参考链接](https://zhuanlan.zhihu.com/p/30706933)。
+
+添加P值和显著性水平[参考链接](https://blog.csdn.net/zhouhucheng00/article/details/106391872)。
