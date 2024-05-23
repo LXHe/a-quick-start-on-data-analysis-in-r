@@ -419,3 +419,92 @@ kappa2(mcnemar_df)
 ```
 
 计算得到的Kappa值为0.457，Z值小于0.05，说明两种方法的结果是不一致的。
+
+## 连续变量的相关性分析
+当两个连续变量均服从正态分布[小节\@ref(chapter024-label-normal-test)]时，可以使用Pearson相关性分析获得两个变量的相关系数，注意此时分析的是两个变量的<font color="red">线性相关系数</font>。通常情况下，Pearson相关系数绝对值位于[0,0.2)区间为极弱相关，位于[0.2,0.4)区间为弱相关，位于[0.4,0.6)区间为中等相关，位于[0.6,0.8)区间为强相关，位于[0.8,1]区间为极强相关。
+
+当至少有一个变量不服从正态分布时，可以使用Spearman或者Kendall's $\tau$相关性分析进行非参数的相关系数度量。当样本量较大（n＞30)时，使用Spearman或者Kendall's $\tau$得出的结论会类似（注意：数值不一定一样）；当样本量较小时，使用Kendall's $\tau$较为可靠。
+
+可以`cor()`函数计算相关系数或`cor.test()`函数来计算相关系数和显著性水平。
+
+### Pearson相关性分析
+```{r chapter023-correlation-pearson, warning=FALSE}
+# 加载数据集
+data(diamonds)
+
+# 选取diamonds数据集中的前5000个观测值进行后续演示
+diamonds <- diamonds[1:5000,]
+
+# Pearson相关性分析
+cor(x = diamonds$depth, y = diamonds$price, method = "pearson") # 仅显示相关系数
+cor.test(x = diamonds$depth, y = diamonds$price, method = "pearson") # 显示相关系数及显著性
+```
+
+### Spearman相关性分析
+```{r chapter023-correlation-spearman, warning=FALSE}
+# Spearman相关性分析
+cor(x = diamonds$depth, y = diamonds$price, method = "spearman") # 仅显示相关系数
+cor.test(x = diamonds$depth, y = diamonds$price, method = "spearman") # 显示相关系数及显著性
+```
+
+### Kendall相关性分析
+```{r chapter023-correlation-kendall, warning=FALSE}
+# Kendall相关性分析
+cor(x = diamonds$depth, y = diamonds$price, method = "kendall") # 仅显示相关系数
+cor.test(x = diamonds$depth, y = diamonds$price, method = "kendall") # 显示相关系数及显著性
+```
+
+## 连续变量的相关性矩阵图
+我们可以借助`PerformanceAnalytics`包直观快速地对多个<font color="red">连续变量</font>的相关性进行可视化展示。
+```{r chapter023-correlation-plot, message=FALSE, warning=FALSE, width=8, height=8}
+# 加载包
+library(PerformanceAnalytics)
+
+# 对diamonds数据集中的连续变量进行相关性矩阵图演示
+chart.Correlation(diamonds[,c(1,5:10)], histogram=TRUE, pch=19)
+```
+生成的相关性矩阵图中：
+1. 对角线为该变量数据的分布图。
+2. 下三角为两个变量的散点图。红色为拟合趋势线。
+3. 上三角显示两个变量的相关系数，\*表示显著性：\* P＜0.05，\*\* P＜0.01，\*\*\* P＜0.001.
+
+***注意***：
+
+如果想要个性化设置相关性矩阵，可以参考[此链接](https://www.jianshu.com/p/ae68ae6c68dd?utm_campaign=haruki&utm_content=note&utm_medium=reader_share&utm_source=qq)。需要注意的是，如果要[修改函数](https://zhuanlan.zhihu.com/p/509403938)，使用`fix()`函数可以直接修改后覆盖，使用`edit()`函数只能用于另存为新函数，原函数不会改变。
+
+我们也可以使用`corrplot`包将相关性矩阵制作成热图。
+```{r chapter023-corrplot, message=FALSE}
+# 加载包
+library(corrplot)
+
+# 计算diamonds数据集中的连续变量的相关系数
+diamonds_corr <- cor(diamonds[,c(1,5:10)])
+
+# 制作热图
+corrplot(
+  corr = diamonds_corr,
+  method = "color", # 设置热图类型
+  type = "lower", # 设置热图显示方式
+  order = "AOE", # 设置热图变量显示顺序
+  addCoef.col = "gray" # 设置相关系数的显示颜色
+)
+```
+
+我们还可以结合相关系数显著性矩阵将热图中不显著相关的变量进行标记。
+```{r chapter023-corrplot-2, message=FALSE}
+# 计算diamonds数据集中的连续变量的相关系数
+diamonds_corr <- cor(diamonds[,c(1,5:10)])
+
+# 计算diamonds数据集中的连续变量的相关系数的显著性
+diamonds_p <- cor.mtest(diamonds[,c(1,5:10)])$p
+
+# 制作热图
+corrplot(
+  corr = diamonds_corr, # 设置相关系数矩阵
+  p.mat = diamonds_p, # 设置相关性系数显著性矩阵
+  method = "color", # 设置热图类型
+  type = "lower", # 设置热图显示方式
+  order = "AOE", # 设置热图变量显示顺序
+  addCoef.col = "gray" # 设置相关系数的显示颜色
+)
+```

@@ -1,0 +1,200 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 描述性统计表
+## 概述
+在进行数据处理时，我们会将数据描述制成表格，即描述性统计表。我们可以用`gtsummary`包完成这些表格的制作。下面我们将使用`gtsummary`包中的`trial`数据集来了解[gtsummary的功能](https://www.danieldsjoberg.com/gtsummary/articles/tbl_summary.html)。
+
+## 简易表格
+我们先来看一下如何用`gtsummary`快速制作一张统计描述表。
+```{r chapter025-gtsummary-brief}
+# 加载包
+library(gtsummary)
+
+# 加载数据集
+data(trial)
+
+# 显示前6行数据
+trial %>% head()
+
+# 简易描述统计表
+trial %>% 
+  select(trt, age, marker, stage, ttdeath) %>% 
+  tbl_summary()
+```
+
+通过上表我们可以发现，连续变量默认描述为中位数（四分位数），缺失值显示为“Unknown”，分类变量描述为例数（百分比）。
+
+***注意***：
+如果连续变量的数值种类在10以内，表格会自动将该连续变量调整为分类变量进行描述。如果要保持连续变量的描述，需要在`tbl_summary()`函数中声明参数`type = list(变量名称 ~ "continuous")`。
+
+我们也可以对不同变量个性化地设置描述方式。
+```{r chapter025-gtsummary-descriptive}
+trial %>% 
+  select(trt, age, marker, stage, ttdeath) %>% 
+  tbl_summary(
+    statistic = (
+      list(
+        all_continuous() ~ "{mean} ({sd})", # 设置所有连续变量的描述方式
+        c("age","marker") ~ "{median} [{p25}, {p75}]", # 单独设置age,marker变量描述方式
+        all_categorical() ~ "{n} / {N} ({p}%)" # 设置所有分类变量的描述方式
+      )
+    ),
+    digits = (
+      list(
+        all_continuous() ~ 2, # 设置连续变量的小数点位数
+        "age" ~ 0 # 单独设置age变量的小数点位数
+      )
+    )
+  )
+```
+
+## 添加组间比较
+如果我们想按照不同`trt`分组描述，可以声明`tbl_summary(by = trt)`参数。
+```{r chapter025-gtsummary-group}
+trial %>% 
+  select(trt, age, marker, stage, ttdeath) %>% 
+  tbl_summary(
+    by = trt,
+    statistic = (
+      list(
+        all_continuous() ~ "{mean} ({sd})", # 设置所有连续变量的描述方式
+        c("age","marker") ~ "{median} [{p25}, {p75}]", # 单独设置age,marker变量描述方式
+        all_categorical() ~ "{n} / {N} ({p}%)" # 设置所有分类变量的描述方式
+      )
+    ),
+    digits = (
+      list(
+        all_continuous() ~ 2, # 设置连续变量的小数点位数
+        "age" ~ 0 # 单独设置age变量的小数点位数
+      )
+    )
+  ) %>% 
+  add_p( # 添加组间比较
+    test = list(c("marker","ttdeath") ~ "t.test"),
+    pvalue_fun = function(x){style_pvalue(x, digits = 2)} # 设置P值的小数点位数
+  ) %>% 
+  add_overall() %>%  # 添加总体描述
+  add_n() # 添加总体样本量
+```
+
+## 格式调整
+```{r chapter025-gtsummary-format}
+trial %>% 
+  select(trt, age, marker, stage, ttdeath) %>% 
+  tbl_summary(
+    by = trt,
+    statistic = (
+      list(
+        all_continuous() ~ "{mean} ({sd})", # 设置所有连续变量的描述方式
+        c("age","marker") ~ "{median} [{p25}, {p75}]", # 单独设置age,marker变量描述方式
+        all_categorical() ~ "{n} / {N} ({p}%)" # 设置所有分类变量的描述方式
+      )
+    ),
+    digits = (
+      list(
+        all_continuous() ~ 2, # 设置连续变量的小数点位数
+        "age" ~ 0 # 单独设置age变量的小数点位数
+      )
+    ),
+    # missing = "no", # 此行代码将不显示缺失值
+    missing_text = "Missing", # 将缺失值一栏显示为"Missing"
+    label = stage ~ "Tumor Stage", # 调整变量名称
+  ) %>% 
+  add_p( # 添加组间比较
+    test = list(c("marker","ttdeath") ~ "t.test"),
+    pvalue_fun = function(x){style_pvalue(x, digits = 2)} # 设置P值的小数点位数
+  ) %>% 
+  add_overall() %>%  # 添加总体描述
+  add_n() %>% # 添加总体样本量
+  modify_header(
+    label ~ "**Variable**" # 调整变量栏名称
+  ) %>%  
+  modify_spanning_header(
+    c("stat_1", "stat_2") ~ "**Treatment Group**" # 为分组添加变量名称stat_1,stat_2不能改
+  ) %>% 
+  modify_footnote(
+    all_stat_cols() ~ "Median [Q1,Q3], Mean (SD) or Frequency (%)", # 调整表注
+  ) %>%
+  separate_p_footnotes() %>% # 为各类比较分别添加表注
+  modify_caption("**Table 1. Patient Characteristics**") %>% # 添加表题
+  bold_labels() # 将变量名称加粗
+```
+
+`gtsummary`还预设了一些期刊风格，我们可以直接调用。
+```{r chapter025--gtsummary-format-journal, message=FALSE, warning=FALSE}
+# 将gtsummary风格预设为jama风格
+theme_gtsummary_journal("jama")
+
+# 允许不同风格相互叠加
+theme_gtsummary_compact()
+
+# 生成表格
+trial %>%
+  select(trt, age, marker, stage, ttdeath) %>%
+  tbl_summary(by = trt, missing_text = "Missing")
+
+# 重置gtsummary风格
+reset_gtsummary_theme()
+```
+
+## 表格导出
+`gtsummary`表格可以导出为[多种形式](https://www.danieldsjoberg.com/gtsummary/index.html)，此时需要将表格用`as_gt()`函数转为gt格式，再使用`gtsave()`函数导出。但是这种方法导出为word时容易乱码，此时可以使用`flextable`包的`save_as_docx()`函数。
+```{r chapter-025-gtsummary-output}
+summary_table <- trial %>% 
+  select(trt, age, marker, stage, ttdeath) %>% 
+  tbl_summary(
+    by = trt,
+    statistic = (
+      list(
+        all_continuous() ~ "{mean} ({sd})", # 设置所有连续变量的描述方式
+        c("age","marker") ~ "{median} [{p25}, {p75}]", # 单独设置age,marker变量描述方式
+        all_categorical() ~ "{n} / {N} ({p}%)" # 设置所有分类变量的描述方式
+      )
+    ),
+    digits = (
+      list(
+        all_continuous() ~ 2, # 设置连续变量的小数点位数
+        "age" ~ 0 # 单独设置age变量的小数点位数
+      )
+    ),
+    # missing = "no", # 此行代码将不显示缺失值
+    missing_text = "Missing", # 将缺失值一栏显示为"Missing"
+    label = stage ~ "Tumor Stage", # 调整变量名称
+  ) %>% 
+  add_p( # 添加组间比较
+    test = list(c("marker","ttdeath") ~ "t.test"),
+    pvalue_fun = function(x){style_pvalue(x, digits = 2)} # 设置P值的小数点位数
+  ) %>% 
+  add_overall() %>%  # 添加总体描述
+  add_n() %>% # 添加总体样本量
+  modify_header(
+    label ~ "**Variable**" # 调整变量栏名称
+  ) %>%  
+  modify_spanning_header(
+    c("stat_1", "stat_2") ~ "**Treatment Group**" # 为分组添加变量名称stat_1,stat_2不能改
+  ) %>% 
+  modify_footnote(
+    all_stat_cols() ~ "Median [Q1,Q3], Mean (SD) or Frequency (%)", # 调整表注
+  ) %>%
+  separate_p_footnotes() %>% # 为各类比较分别添加表注
+  modify_caption("**Table 1. Patient Characteristics**") %>% # 添加表题
+  bold_labels() # 将变量名称加粗
+
+# # 导出为PDF
+# summary_table %>% 
+#   as_gt() %>% # 需要先转换为gt格式再进行存储
+#   gt::gtsave(filename = "summary.pdf")
+
+# # 导出为word
+# summary_table %>% 
+#   as_flex_table() %>%
+#   flextable::save_as_docx(summary_table, path='summary.docx') 
+```

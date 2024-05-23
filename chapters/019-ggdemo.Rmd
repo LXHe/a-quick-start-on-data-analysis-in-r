@@ -114,8 +114,7 @@ p4 <- ggplot(data = mpg, aes(x = cty, y = hwy, color = factor(drv))) +
     labels = c("front wheel drive", "rear wheel drive", "4 wheel drive") 
   ) +
   theme(
-    legend.position = c(0.05,0.95),
-    legend.justification = c(0,1) 
+    legend.position = c(0.05,0.95)
   ) +
   labs(title = "增加趋势线的散点图")
   
@@ -157,7 +156,6 @@ ggplot() + # 声明作图
   theme_classic() + # 选择theme_classic主题
   theme(
     legend.position = c(0.05, 0.95),
-    legend.justification = c(0, 1),
     legend.title = element_blank(),
     legend.background = element_rect(color = "black") # 给图例添加黑边框
   )
@@ -300,4 +298,57 @@ mpg %>%
     legend.position = "right", # 设置图例位置为"right"
     legend.justification = "top", # 设置图例锚点为"top"    
   )
+```
+
+## 棒棒糖图与哑铃图
+在展示生存分析数据时，我们有时会用到由一根细线和一个点组成的棒棒糖图。如果将线的两端用点标记出来，则能组成哑铃图。
+```{r chapter019-lollipop}
+set.seed(1)
+# 生成棒棒糖图数据框
+df_1 <- data.frame(
+  ID = letters[1:5],
+  time_start = rnorm(n=5, mean=20, sd=5), # 设置起始观测时间
+  time_obs = rnorm(n=5, mean=10, sd=3), # 设置观测窗口期
+  group = 1
+)
+
+df_2 <- df_1 %>% 
+  mutate(
+    time_start = time_start + rnorm(n=5, mean=20, sd=3),
+    time_obs = time_obs + rnorm(n=5, mean=10, sd=2),
+    group = 2
+  )
+
+df <- rbind(df_1, df_2)
+df$group <- as.factor(df$group)
+
+p1 <- ggplot(
+    data = df_1,
+    aes(x=time_start, y=ID)
+  ) + 
+  geom_segment(
+    aes(x=time_start, xend=time_obs, y=ID, yend=ID) # 作出起止线段
+  ) +
+  geom_point(
+    shape=16, size=4, color="#2ca25f" # 设置散点类型
+  ) +
+  labs(x = "观测时间")
+
+p2 <- ggplot(
+  data = df,
+  aes(
+    x = time_start, 
+    y = reorder(ID, time_start), # 将y轴标尺（ID）依照time_start进行排列
+    color = group) # 设置散点以group的形式标注颜色
+  ) +
+  geom_line(aes(group = reorder(ID, time_start)), color="black") + # 将散点以个ID组的形式连接
+  geom_point(shape=16, size=4) + # 设置散点类型
+  labs(y="ID", x="观测时间") +
+  scale_color_manual(values=c("#FC4E07","#36BED9"))+ # 设置散点颜色
+  theme(
+    legend.background = element_blank(), # 清除图例背景色
+    legend.position = c(0.85,0.12) # 设置图例位置
+  )
+
+plot_grid(p1, p2)
 ```

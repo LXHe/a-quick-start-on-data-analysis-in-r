@@ -1,0 +1,714 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 广义线性模型
+## 概述 {#chapter027-label-intro}
+线性回归即分析因变量与自变量之间是否存在线性关系，其前提条件为：
+
+1. 线性相关（linearity）：自变量（X）和因变量（g(Y)）的关系可表示为$g(Y) = X\beta$，其中Y为n×1的列矩阵（n为样本量），X为n×(m+1)的矩阵（m为变量数目，1为截距项）,$\beta$为(m+1)×1的列矩阵。
+2. 残差相互独立（independence）：即各观测值残差的协方差为0，以$\varepsilon_i$表示第i个观测值的残差，则有$\forall_{i\neq j}\ Cov(i,j)=0$。
+3. 残差的方差恒定（homoscedasticity）：即各观测值的残差不会随着自变量X的改变而发生一致性的变化（比如不会随着X的增大而增大），可以表示为$\forall_{i \in n}\ Var(\varepsilon_i)=\sigma^2$。
+4. 残差服从正态分布（Normality）：可以表示为$\forall_{i \in n}\ \varepsilon_i \overset{\mathrm{iid}}{\sim} N(0,\sigma^2)$。
+
+***注意***：
+
+1. 就第1个条件而言，其本质是原始数据中每个记录$i$的自变量$X_i$构建的线性模型的预测值$\eta_i$与对应因变量$y_i$分布的期望值经过特定函数（链接函数）处理后相等，这里的因变量$y_i$的分布依赖于自然参数$\theta_i$的分布（[参考链接](https://www.zhihu.com/question/28469421)）。如果原始数据中的因变量Y服从正态分布，此时的线性回归为简单线性回归；如果原始数据中的因变量Y不为正态分布（如为伯努利或者泊松分布）时，我们需要将Y进行转换使其满足连续性的条件，这就是广义线性回归模型。这个模型包含三个基本元素：系统成分（systematic component）（即自变量）、随机成分（random component）（即因变量）和连结函数（link function）。其中，系统成分是线性组合形式，随机成分必须为[指数族](https://zhuanlan.zhihu.com/p/596078459)分布。
+
+<div><img src="images/chapter027-glm.png"></div>
+
+如果因变量为指数族分布，则其分布公式可以写成：
+
+\begin{equation}
+f(y;\theta,\phi) = exp({\frac{y\theta-b(\theta)}{a(\phi)}+c(y,\phi)})
+(\#eq:exp-family)
+\end{equation} 
+
+此分布的均值为$E(y) = \mu = b^{'}(\theta)$，方差为$Var(y) = \sigma^2 = b^{''}(\theta)a(\phi)$，而$\theta$就是链接函数。
+
+2. 通常来说，如果第4个条件满足，那么第2和第3个条件也会满足。
+
+## 简单线性回归 
+### 模型构建
+如果原始数据中的因变量服从正态分布，我们可以直接使用`lm()`函数进行简单线性回归分析，其中的参数设置为`因变量~自变量1+自变量2+...`，如果需要囊括除因变量以外的所有变量，可以设置为`因变量~.`。以[darwin数据集](https://archive.ics.uci.edu/dataset/732/darwin)为例，我们进行`mean_gmrt1`和`mean_acc_in_air1`变量的线性回归分析。
+```{r chapter-027-lm, message=FALSE, warning=FALSE}
+library(tidyverse)
+df_darwin <- read_csv("data/darwin.csv")
+
+# 构建线性回归方程
+lm1 <- lm(mean_gmrt1~mean_acc_in_air1, data=df_darwin)
+```
+### 结果输出
+在上例中，我们已经构建了一个名为`lm1`的简单线性回归模型，这个模型的输出格式为列表，包含12个元素，部分元素内容的截图如下：
+
+<div><img src="images/chapter027-lm-results.png"></div>
+
+我们可以使用`模型$元素名称`的方式调用感兴趣的元素内容（如通过`ml1$residuals`调用残差），或者使用`summary()`函数和`broom`包的`tidy()`函数查看模型的主要结果。
+```{r chapter027-lm-summary}
+# 查看模型结果
+summary(lm1)
+
+# 查看模型的变量结果
+broom::tidy(lm1)
+
+# 获取回归系数
+coef(lm1)
+
+# 获取置信区间(默认为95%)
+confint(lm1)
+```
+
+### 残差分析图
+我们再对残差进行可视化分析。
+```{r chapter027-lm-residual, height=15}
+plot(lm1)
+```
+第一张图（Residuals vs Fitted），横轴为因变量Y的值，纵轴为残差。如果残差分布比较均匀，说明模型的误差是随机分布的（即符合Guaasian-Markov条件）。如果残差随着因变量的增加而增大（或减小）或者呈现二次曲线分布，提示原始数据可能并不是线性关系，这时可以先通过对数、指数或平方根等变换，然后再进行线性回归。
+
+第二张图为Q-Q图，用于检验残差的正态分布情况[小结\@ref(chapter024-label-normal-test)]。
+
+第三张图与第一张图类似，将残差进行了标准化处理，可以更好地观察残差的偏离情况。
+
+第四张图用于判断极端值。横轴为杠杆效力（[leverage](https://www.r-bloggers.com/2016/06/leverage-and-influence-in-a-nutshell/#:~:text=Leverage%20Definition%20Leverage%20is%20a%20measure%20of%20how,potential%20it%20has%20to%20impact%20the%20fitted%20model.)），指的是某个观测值对于回归模型的影响（即对决定系数$R^2$的影响）。杠杆效力越大，说明该观测值对回归模型的影响越强。纵轴为残差，用于表示模型与观测值的实际匹配程度，残差绝对值越大，说明模型预测值与实际观测值相差越远，提示该观测值有欠拟合的风险。杠杆效力与残差的阈值通常用Cook's distance来判断（图中标注为虚线）。通常Cook's distance的阈值为$\frac{4}{n}$（n为样本量）。当一个观测值有很强的杠杆效力同时残差绝对值也很大时，提示此观测值可能是极端值，会对模型的稳定性造成较大的影响，此时需要对此观测值进行检查，看是否存在数据录入错误或者其它造成该数据出现极端状况的因素。如果数据异常情况无法解释，可以考虑将异常值删除再重新建模。
+
+第四张图中仅标注了Cook's distance为0.5和1的情况，不足以辅助我们进行模型判断，此时我们可以使用`cooks.distance()`函数进行更详细的探索。
+```{r chapter027-lm-cooks}
+# 基于模型计算Cook's distance
+cooksD_lm1 <- cooks.distance(model=lm1) # 返回一个数值向量
+
+# 可视化Cook's distance
+plot( # 对向量进行可视化，横轴为索引值，纵轴为数值
+  cooksD_lm1, # 目标向量
+  main = "Cook's distance" # 设置图片名称
+)
+abline(h=4/length(cooksD_lm1), lty=2, col="red") # 添加Cook's distance水平阈值线
+
+# 一共有14个超过Cook's distance的观测值
+# 如果我们想要进一步研究这些观测值，可以将它们提取出来
+# df_darwin_extract <- df_darwin[cooksD_lm1 >= 4/length(cooksD_lm1),]
+
+# 如果我们想要移除这些值，可以进行如下操作
+# df_darwin_filter <- df_darwin[cooksD_lm1 < 4/length(cooksD_lm1),]
+```
+
+### 模型比较
+有时我们需要构建多个回归模型并对这些模型进行比较，这时会遇到两种情况：
+
+1. 参与比较的模型是嵌套关系，比如模型A为`Y~X1`，模型B为`Y~X1+X2`，模型C为`Y~X1+X2+X3`，我们可以使用`anova()`函数进行模型间的卡方比较（Chi-Square Comparison）。当P值显著时，选择自变量数目更多的模型；反之，选择自变量数目更少的模型。
+
+2. 第二种情况为参与比较的模型是非嵌套关系，比如模型A为`Y~X1+X2`，模型B为`Y~X1+X3`，模型C为`Y~X4`，我们可以综合考虑`adj.r.squared`、`AIC`和`BIC`指标，选择`adj.r.squared`值大、`AIC`和`BIC`值小的模型。需要指出的是，AIC的计算公式为$AIC=-2*ln(L)+2*k$，BIC的计算公式为$BIC=-2*ln(L)+ln(n)*k$，其中L为似然函数，n为样本量，k为自变量数目。相比AIC，BIC在样本量较大时（n≥100）对模型参数惩罚更大，导致BIC更倾向于选择参数少的简单模型。
+
+#### 嵌套模型比较
+```{r chapter027-lm-comparison-nested, message=FALSE, warning=FALSE}
+# 创建新模型（lm1的嵌套模型）
+lm2 <- lm(mean_gmrt1~mean_acc_in_air1+max_x_extension1, data=df_darwin)
+
+# 模型lm1与lm2的比较
+anova(lm1, lm2)
+# P值显著，说明lm2模型比lm1模型更好
+```
+
+#### 非嵌套模型比较
+```{r chapter027-lm-comparison-unnested, message=FALSE, warning=FALSE}
+# 创建新模型（lm1的非嵌套模型）
+lm3 <- lm(mean_gmrt1~max_x_extension1, data=df_darwin)
+
+# 比较两个模型的AIC与BIC值
+summary(lm1)
+summary(lm3)
+
+# 计算各模型AIC值
+lapply(list(lm1,lm3), AIC)
+
+# 计算各模型BIC值
+lapply(list(lm1,lm3), BIC)
+# lm1的调整R方比lm3大，AIC和BIC比lm3小，说明lm1模型比lm3模型好
+```
+
+### 模型预测
+当我们需要使用构建的模型对新数据进行预测时，可以使用`predict()`函数。
+```{r chapter027-lm-prediction}
+# 新数据的格式需要与模型创建时的数据格式一致
+df_newdata <- data.frame( # 创建新两个观测值，变量名称必须与模型构建数据的变量名一致
+  mean_acc_in_air1 = c(99, 100),
+  max_x_extension1 = c(1500, 1700)
+)
+
+# 进行预测
+predict(object=lm2, newdata=df_newdata)
+```
+
+### 模型的导出与导入
+我们可以使用`save()`函数导出模型，使用`load()`函数导入模型。在导入模型时，需要注意，导入的模型会自动命名为原先模型的名称。
+```{r chapter027-lm-save-load}
+# 导出模型
+# save(lm2, file="linearRegression.RData")
+
+# 导入模型
+# load(file="linearRegression.RData")
+# 此时将会生成一个名为lm2的列表，包含lm2模型的内容
+```
+
+### 多重共线性检验
+当模型中包含多个自变量时，我们需要对自变量进行多重共线性检验，以保证自变量间的相互独立。这个检验可以通过`car`包的`vif()`函数实现。
+```{r chapter027-lm-vif, message=FALSE, warning=FALSE}
+# 加载包
+library(car)
+
+# 构建多元线性回归模型
+lm_full <- lm(
+  formula = mean_gmrt1 ~.,
+  data = df_darwin %>% select(ends_with("1"))
+)
+
+# 多重共线性检验
+vif(lm_full)
+```
+通常认为，当VIF＞10时，对应自变量存在多重共线性问题，需要被删除。
+
+## Logistic回归
+### 二分类的Logistic回归
+#### 模型构建
+当每个记录的因变量$y_i$呈现伯努利分布（$y_i\sim bern(p_i)$），$p_i$为事件发生概率。如果我们按照公式\@ref(eq:exp-family)的形式进行转换，将有如下结果：
+
+$\begin{align}
+f(y_i;p_i) &= p_{i}^{y_{i}} (1-p_i)^{1-y_i}\\
+           &= exp{(p_{i}^{y_{i}} (1-p_i)^{1-y_i}])}\\
+           &= exp{(y_i ln\frac{p_i}{1-p_i} + ln(1-p_i))}
+\end{align}$
+
+通过上面的公式，我们可以发现，链接函数为$\theta_{i} = ln\frac{p_i}{1-p_i}$，进而可以推出$p_i = \frac{e^{\theta_i}}{1+e^{\theta_i}}$。
+
+下面我们就能利用最大似然估计（maximum likelihood estimation）来进行参数估计，具体步骤为：
+
+1. 写出边缘概率质量函数（marginal pmf）。
+2. 写出联合概率质量函数（joint pmf）。
+3. 写出包含参数的似然方程。
+4. 写出包含参数的log转换似然方程。
+5. 求第4步方程最大值时的参数。
+
+在Logistic回归中，我们来看一下参数是如何估计的。
+
+1. 由于每个记录的因变量$y_i$呈现伯努利分布（$y_i\sim bern(p_i)$），因此该因变量的边缘概率质量函数为$f(y_i;p_i) = p_{i}^{y_{i}} (1-p_i)^{1-y_i}$
+2. 样本量为n时的联合概率质量函数为$F(y_i;p_i) = \prod\limits_{i=1}^{n}p_{i}^{y_{i}} (1-p_i)^{1-y_i}$
+3. 由于$X_i\beta = \theta_{i} = ln\frac{p_i}{1-p_i}$，将$p_i$用$\theta_{i}$替代可得包含参数的似然方程为$L(y_i;\theta_{i}) = \prod\limits_{i=1}^{n} (\frac{1}{1+e^{-\theta_i}})^{y_i}(\frac{1}{1+e^{\theta_i}})^{1-y_i}$
+4. log转换似然方程为$LL(y_{i};\theta_{i}) = \sum\limits_{i=1}^{n}(y_{i}\theta_{i}-ln(1+e^{\theta_{i}}))$
+5. 求第4步方程关于$\beta$的偏导数，得出参数值。
+
+在R中，可以使用`glm()`函数并声明`family=binomial(link="logit")`参数进行Logistic回归分析。我们继续以[UCI心脏病数据集](https://archive.ics.uci.edu/dataset/45/heart+disease)为例，分析`age`（年龄），`sex`（性别），`chol`（胆固醇），`exang`（运动诱发心绞痛）与`target`（心脏病）的关系。
+```{r chapter027-lr-model, message=FALSE, warning=FALSE}
+# 数据导入
+df_heart <- read_csv("data/heart.csv")
+
+# 变量类型转换
+df_heart <- df_heart %>% 
+  mutate(across(c(sex,exang), as_factor))
+
+# 构建logistic回归方程
+heart_lr <- glm(
+  formula = target ~ age + sex + chol + exang,
+  data = df_heart,
+  family = binomial(link="logit")
+)
+```
+
+#### 结果输出
+构建完logistic回归模型后，我们可以通过`summary()`函数查看模型的主要参数或使用`coef()`函数查看特定变量的系数。如果需要计算特定变量改变对比值比（OR）的影响，还需要在`coef()`函数的基础上添加`exp()`自然指数函数。
+```{r chapter027-lr-results}
+# 查看结果
+summary(heart_lr)
+
+# 查看age变量的系数
+coef(heart_lr)["age"]
+
+# 计算age增加1个单位对比值比的影响
+exp(coef(heart_lr)["age"])
+# 此分析结果显示，age每增加1个单位，心脏病的患病风险将下降6.4%
+```
+
+#### 设置参照水平
+R默认将分类变量的第一个水平当做参照，如果想更改参照水平，可以使用`relevel()`函数声明参数`ref`来设置参照水平，注意此时声明的参数需要时分类变量的水平**标签**。
+```{r chapter027-lr-reference}
+# 将sex的参照水平改为"1"
+df_heart$sex <- relevel(
+  df_heart$sex, 
+  ref = "1"
+)
+
+# 构建logistic回归方程
+heart_lr_ref <- glm(
+  formula = target ~ age + sex + chol + exang,
+  data = df_heart,
+  family = "binomial"
+)
+
+summary(heart_lr_ref)
+```
+
+#### 模型预测
+我们可以使用`predict()`函数进行模型预测，需要注意的是，计算结果默认返回为线性模型（即$X\beta$部分）的计算结果。如果想要获取患病的概率，需要声明参数`type="response"`。
+```{r chapter027-lr-prediction}
+# 构建新数据，格式需要与模型创建时的数据格式一致
+df_newdata <- data.frame(
+  age = 60,
+  sex = "1", # 注意：如果变量为分类变量，此时的输入数据类型应当为字符型，否则会报错；如果原始变量对应标签，则需输入标签 
+  chol = 250,
+  exang = "0" # 注意：如果变量为分类变量，此时的输入数据类型应当为字符型，否则会报错 
+)
+
+# predict()函数预测值，logistic回归中返回logit值
+predict(object=heart_lr, newdata=df_newdata)
+
+# predict(type="response")函数预测值，logistic回归中返回概率值
+predict(object=heart_lr, newdata=df_newdata, type="response")
+```
+
+#### 模型检验{#chapter027-label-goodness-test}
+我们可以通过拟合优度（goodness of fit）检验或过度离势（overdispersion）检验。
+
+我们可以通过偏差残差（residual deviance）的自由度为`n-m+1`（n为样本量，m为变量数目）的卡方分布概率进行判断，当P＞0.05时，说明拟合良好；反之，则拟合不良。
+
+如果方差$Var(y)$大于期望值$E(y)$[小节\@ref(chapter027-label-intro)]，则有过度离势的风险，也就是说预测值与实际值存在偏差过大的风险。因此需要通过残差偏差与残差自由度的比值进行判断：当比值接近1时，说明不存在过度离势，模型可以给出较好地预测结果；若比值偏离1过多，说明存在过度离势。
+
+当拟合不良或者存在过度离势风险时，可以进行调整的方法有：
+
+1. 使用类二项分布，即声明`family=quasibinomial(link="logit")`。
+2. 检查是否有离群值。
+3. 调整变量数目，构建新模型。
+
+```{r chapter027-lr-deviation}
+# 拟合优度检验
+pchisq(q=heart_lr$deviance, df=heart_lr$df.residual)
+
+# 过度离势检验
+heart_lr$deviance / heart_lr$df.residual
+```
+
+### 多分类的Logistic回归{#chapter027-label-multinomial}
+#### 模型构建
+当因变量包含多个水平且这些水平之间没有顺序之分，我们可以使用`nnet`包的`multinom()`函数进行多分类的Logistic回归。依旧以[UCI心脏病数据集](https://archive.ics.uci.edu/dataset/45/heart+disease)为例，分析`age`（年龄），`sex`（性别），`chol`（胆固醇），`exang`（运动诱发心绞痛）与`slope`（心电图ST段的抬高、水平或下降）的关联。
+```{r chapter027-multinomial, message=FALSE, warning=FALSE}
+library(nnet)
+
+df_heart$slope <- factor(
+  df_heart$slope, 
+  levels = c(0,1,2), # 声明变量水平
+  labels = c("upsloping", "flat", "downsloping") # 声明变量水平对应的标签
+)
+
+df_heart$slope <- relevel(
+  df_heart$slope, 
+  ref = "flat" # 设置参照水平
+)
+
+heart_multinorm <- multinom(
+  formula = slope ~ age + sex + chol + exang,
+  data = df_heart
+)
+```
+
+#### 结果输出
+```{r chapter027-multinomial-summary, message=FALSE, warning=FALSE}
+# 主要结果呈现
+summary(heart_multinorm)
+
+# 95%置信区间
+confint(heart_multinorm)
+```
+
+注意，此时的结果没有输出P值，所以我们需要通过t值计算
+```{r chapter027-multinomial-p, message=FALSE, warning=FALSE}
+# 计算t值
+t <- summary(heart_multinorm)$coefficients / summary(heart_multinorm)$standard.errors
+
+# 计算P值
+p <- pnorm(abs(t), mean=0, sd=1, lower.tail=FALSE) * 2
+
+# 呈现P值
+p
+```
+我们可以看到，以`slope`变量的flat水平为参照时，upsloping水平与`age`变量显著相关，downsloping水平与`age`和`exang`变量显著相关。
+
+#### 模型预测
+参照上例，多分类的Logistic回归公式为：
+
+$ln(\frac{P(upsloping)}{P(flat)}) = Intercept_{1} + \beta_{age_{1}}*age + \beta_{sex0_{1}}*sex + \beta_{chol_{1}}*chol + \beta_{exang1_{1}}*exang$
+
+$ln(\frac{P(downsloping)}{P(flat)}) = Intercept_{2} + \beta_{age_{2}}*age + \beta_{sex0_{2}}*sex + \beta_{chol_{2}}*chol + \beta_{exang1_{2}}*exang$
+
+这里我们可以得到在对应数据下，各个水平的概率比：
+
+$P(upsloping) = e^{Intercept_{1} + \beta_{age_{1}}*age + \beta_{sex0_{1}}*sex + \beta_{chol_{1}}*chol + \beta_{exang1_{1}}*exang} \ P(flat)$
+
+$P(downsloping) = e^{Intercept_{2} + \beta_{age_{2}}*age + \beta_{sex0_{2}}*sex + \beta_{chol_{2}}*chol + \beta_{exang1_{2}}*exang} \ P(flat)$
+
+由于$P(flat) + P(upsloping) + P(downsloping) = 1$，可以求出各个水平的概率。在R中，我们可以通过声明`predict()`函数的`type="probs"`参数得到各个水平的概率。
+```{r chapter027-multinomial-prediction, message=FALSE, warning=FALSE}
+# 构建新数据，格式需要与模型创建时的数据格式一致
+df_newdata <- data.frame(
+  age = c(60,60),
+  sex = c("1","0"), 
+  chol = c(250,250),
+  exang = c("0","0") 
+)
+
+# 获得各个水平的概率
+predict(
+  object = heart_multinorm,
+  newdata = df_newdata,
+  type = "probs"
+)
+```
+
+### 有序分类的Logistic回归
+#### 模型构建
+如果一个因变量包含多个水平且这些水平是有序的（如某疾病的I期、II期和III期，疗效的好、中和差），我们就需采用有序分类的Logistic回归。其原理是将各个水平按顺序依次分割为二元Logistic回归，比如疾病三期分期的分析时，需要拆分为I期与（II、III）期的Logistic回归以及（I、II）期与III期的Logistic回归。
+
+有序分类的Logistic回归的前提假设为，在拆分的多个二分类Logistic回归中，除了截距不同，自变量的系数均相等，也即假定自变量在多个模型中对累计概率的比值比影响相同（比例优势假设）。
+
+有序分类的Logistic回归有[多种计算公式](https://zhuanlan.zhihu.com/p/660640407)，在R中，用$i$表示分类变量的第$i$个水平，该Logistic回归的公式为：
+
+$\begin{align}
+logit[P(Y \leq i|X)] &= ln[\frac{P(Y \leq i|X)}{1-P(Y \leq i|X)}]\\
+                     &= \beta_{0i} - (X_{1}\beta_{1} + X_{2}\beta_{2} ...)
+\end{align}$
+
+分类变量的第$i$个水平的概率为：
+
+$\begin{align}
+P(Y = i|X) &= P(Y \leq i|X) - P(Y \leq i-1|X)\\
+           &= \frac{1}{1+e^{-(\beta_{0i} - (X_{1}\beta_{1} + X_{2}\beta_{2} ...))}} - \frac{1}{1+e^{-(\beta_{0i-1} - (X_{1}\beta_{1} + X_{2}\beta_{2} ...))}}
+\end{align}$
+
+使用有序分类的Logistic回归时，需要满足以下条件：
+
+1. 只有一个因变量且因变量水平为有序水平
+2. 模型包含至少一个自变量。
+3. 因变量的观察结果相互独立。
+4. 自变量之间无多重共线性。
+5. 满足平行线检验(即比例优势假设)，即不同因变量水平的自变量系数相等；如果不满足此检验，则可采用多分类的Logistic回归[小节\@ref(chapter027-label-multinomial)]。
+
+依旧以[UCI心脏病数据集](https://archive.ics.uci.edu/dataset/45/heart+disease)为例，分析`age`（年龄），`sex`（性别），`chol`（胆固醇），`exang`（运动诱发心绞痛）与`restecg`（安静心电图等级0-2）的关联。需要用到`MASS`包的`polr()`函数进行建模，`brant`包的`brant()`函数进行平行线检验。
+```{r chapter027-order-lr, message=FALSE, warning=FALSE}
+# 加载包
+library(MASS)
+library(brant)
+
+df_heart$restecg <- factor(
+  df_heart$restecg,
+  levels = c(0,1,2), # 声明变量水平
+  labels = c("normal", "abnormal", "definite") # 声明变量水平对应的标签
+)
+
+# 构建有序分类的Logistic回归
+heart_lr_ordered <- polr(
+  formula = ordered(restecg) ~ age + sex + chol + exang,
+  data = df_heart,
+  Hess = TRUE,
+  method = "logistic"
+)
+```
+
+#### 结果输出
+```{r chapter027-order-lr-summary, message=FALSE, warning=FALSE}
+# 主要结果呈现
+summary(heart_lr_ordered)
+
+# 95%置信区间
+confint(heart_lr_ordered)
+
+# 整合OR值与95%置信区间
+cbind(
+  OR=exp(coef(heart_lr_ordered)), # 将系数进行自然指数转换并将结果命名为OR
+  exp(confint(heart_lr_ordered))
+)
+```
+对于上述结果，对于连续变量`age`，我们可以解读为，在其余变量不变的情况下，年龄每增加1年，在`restecg`任何水平中观察到对应事件的概率都比原先下降了2.6%；对于分类变量`sex`，我们可以解读为，在其余变量不变的情况下，在`restecg`任何水平中，女性发生对应事件的概率都是男性的1.43倍。
+
+此时的结果没有输出P值，所以我们需要通过t值计算
+```{r chapter027-order-lr-p, message=FALSE, warning=FALSE}
+# 获取系数
+coef_table <- coef(summary(heart_lr_ordered))
+
+# 计算P值
+p <- pnorm(abs(coef_table[, "t value"]), mean=0, sd=1, lower.tail=FALSE) * 2
+
+# 整合P值
+cbind(coef_table, p)
+```
+
+#### 共线性检验
+```{r chapter027-order-lr-vif, message=FALSE, warning=FALSE}
+vif(heart_lr_ordered)
+```
+结果显示，变量间无共线性。
+
+#### 平行线检验
+```{r chapter027-order-lr-parallel, message=FALSE, warning=FALSE}
+brant(heart_lr_ordered)
+```
+结果显示，自变量中存在P＜0.05的情况，所以本例倾向用多分类的Logistic回归分析。（由于没有找到合适的例子，我们先勉强分析下去）
+
+#### 模型预测
+```{r chapter027-order-lr-prediction, message=FALSE, warning=FALSE}
+# 构建新数据，格式需要与模型创建时的数据格式一致
+df_newdata <- data.frame(
+  age = c(60,60),
+  sex = c("1","0"), 
+  chol = c(250,250),
+  exang = c("0","0") 
+)
+
+# 获得各个水平的概率
+predict(
+  object = heart_lr_ordered,
+  newdata = df_newdata,
+  type = "probs"
+)
+```
+
+各水平概率的计算方法为：
+
+$P(y=normal) = \frac{1}{1+e^{-(Intercept_{(normal|abnormal)}-(\beta_{age_{1}}*age + \beta_{sex0_{1}}*sex + \beta_{chol_{1}}*chol + \beta_{exang1_{1}}*exang))}}$
+
+$P(y=abnormal) = \frac{1}{1+e^{-(Intercept_{(abnormal|definite)}-(\beta_{age_{1}}*age + \beta_{sex0_{1}}*sex + \beta_{chol_{1}}*chol + \beta_{exang1_{1}}*exang))}} - P(y=normal)$
+
+$P(y=definite) = 1 - P(y=normal) - P(y=abnormal)$
+
+### 条件Logistic回归
+在观察性研究中，我们有时会将具有特定属性的观察对象（病例组）与没有该条件的对象（对照组）按照1:n的比例匹配，此时如果采用二分类的Logistic回归分析，会高估OR值，因此需要选用条件Logistic回归。在R中可以用`survival`包的`clogit()`函数实现，其模型构建与其它Logistic回归类似，只是需要额外使用`strata()`声明分层变量。我们来看下面的例子，为了分析某治疗方案的治疗效果，我们将病人按照种族和年龄以1:3的比例匹配对照组，利用所得数据进行分析。
+```{r chapter027-condition-lr, message=FALSE, warning=FALSE}
+# 加载包
+library(survival)
+
+set.seed(1)
+# 创建数据框
+df_condition <- data.frame(
+  ID = rep(1:100, each=4),
+  race = rep(c("A","B","C","D"), each=100),
+  treatment = rep(c(1,0,0,0), time=100),
+  age = rep(round(rnorm(n=100, mean=75, sd=6)), each=4),
+  case = sample(c(0,1), size=400, replace=TRUE)
+)
+
+# 设置分类变量
+df_condition$treatment <- factor(df_condition$treatment)
+df_condition$race <- factor(df_condition$race)
+
+# 构建模型
+condition_logit <- clogit(
+  formula = case ~ treatment + strata(ID),
+  data = df_condition
+)
+
+# 查看结果
+summary(condition_logit)
+```
+
+## 泊松分布
+### 模型构建
+当因变量为特定时间段的离散型的计数（如每周某疾病的发病数、每天特定时刻的车流量）时，我们通常认为其符合泊松分布。根据之前关于链接函数的推导，我们很容就知道，泊松分布的链接函数为log()。此时需要在`glm()`函数中声明参数`poisson(link = "log")`。在下面的例子中，我们来分析`age`和`treatment`与一段时间内某疾病发生例数`count`的关联。
+```{r chapter027-poission, message=FALSE, warning=FALSE}
+set.seed(1)
+# 创建数据框
+df_poisson <- data.frame(
+  ID = 1:400,
+  treatment = sample(c(1,2,3), size=400, replace=TRUE, prob=c(0.1,0.3,0.6)),
+  age = round(rnorm(n=400, mean=75, sd=5)), 
+  count = rpois(n=400, lambda=4)
+)
+
+# 设置分类变量
+df_poisson$treatment <- factor(
+  df_poisson$treatment,
+  levels = c(1,2,3),
+  labels = c("ctr","trtA","trtB")
+)
+
+# 构建模型
+poisson_reg <- glm(
+  formula = count ~ treatment + age,
+  data = df_poisson,
+  family = poisson(link="log")
+)
+```
+
+### 结果输出
+```{r chapter027-poission-results, message=FALSE, warning=FALSE}
+summary(poisson_reg)
+```
+
+### 模型预测
+```{r chapter027-poisson-prediction}
+# 新数据的格式需要与模型创建时的数据格式一致
+df_newdata <- data.frame(
+  treatment = c("ctr","trtA","trtB"), # 注意这里的输入值为对应的标签值
+  age = c(70, 70, 70)
+)
+
+# 预测发生例数
+predict(object=poisson_reg, newdata=df_newdata, type="response")
+```
+### 模型检验
+与小节\@ref(chapter027-label-goodness-test)一样，当模型不佳时，可以考虑使用类泊松分布，即声明`family=quasipoisson(link="log")`。
+
+### 时间段变化的泊松分布
+上面的例子是时间段固定的泊松分布。在实际生活中，我们可能会遇到时间段不固定的泊松分布情况，比如对不同病人观察了不同的时间长度（T），记录了某疾病的发病次数。此时，我们需要添加自变量`log(T)`并使用`offset()`函数将该变量的系数固定为1。
+```{r chapter027-poission-unit, message=FALSE, warning=FALSE}
+set.seed(1)
+# 创建数据框
+df_poisson2 <- data.frame(
+  ID = 1:400,
+  treatment = sample(c(1,2,3), size=400, replace=TRUE, prob=c(0.1,0.3,0.6)),
+  time = round(runif(n=400, min=1, max=2)*10),
+  age = round(rnorm(n=400, mean=75, sd=5)), 
+  count = rpois(n=400, lambda=4)
+)
+
+# 设置分类变量
+df_poisson2$treatment <- factor(
+  df_poisson2$treatment,
+  levels = c(1,2,3),
+  labels = c("ctr","trtA","trtB")
+)
+
+# 构建模型
+poisson_reg2 <- glm(
+  formula = count ~ treatment + age + offset(log(time)),
+  data = df_poisson2,
+  family = poisson(link="log")
+)
+
+# 结果呈现
+summary(poisson_reg2)
+
+# 新数据的格式需要与模型创建时的数据格式一致
+df_newdata <- data.frame(
+  treatment = "ctr", # 注意这里的输入值为对应的标签值
+  time = 10,
+  age = 70
+)
+
+# 预测time=10时间段内的发生例数
+predict(object=poisson_reg2, newdata=df_newdata, type="response")
+```
+
+## 总结
+### 应用场景
+关于各分布形式的介绍，可以[参考此链接](https://zhuanlan.zhihu.com/p/615643051)。
+
+|因变量分布形式|链接函数|场景|
+|:---|:---|:---|
+|正态分布 (Gaussian)|Identity (恒等函数)|身高|
+|逆高斯分布 (Inverse Gaussian)|Inverse squared (平方的倒数)|数据呈正偏态分布，如某商品的销量|
+|伽马分布 (Gamma)|Inverse (倒数)|等待服务的时间|
+|二项分布 (Binomial)|Logit, Probit, clog-log|用于两种结局的选择，比如是否发病|
+|泊松分布 (Poisson)|Log (对数)|用于计数事件，比如单位时间内发生某事件的次数|
+
+### 表格呈现
+我们依然可以使用`gtsummary`包对模型结果进行汇总。
+
+#### 简单线性回归
+```{r chapter027-gtsummary-lr, message=FALSE, warning=FALSE}
+library(gtsummary)
+
+# 单变量简单线性回归
+linear_uv <- df_darwin %>%
+  select(ends_with("1")) %>%
+  tbl_uvregression(
+    method = lm, # 设置回归模型
+    y = mean_gmrt1, # 设置因变量
+    estimate_fun = function(x){style_ratio(x, digits = 3)}, # 设置显示小数点位数
+    pvalue_fun = function(x){style_pvalue(x, digits = 3)}, # 设置小数点位数
+    hide_n = TRUE # 不显示计数
+  ) %>%
+  add_global_p() %>%
+  bold_p()
+
+# 显示结果
+linear_uv
+
+# 多变量变量简单线性回归
+linear_mv <- df_darwin %>%
+  select(ends_with("1")) %>%
+  glm(formula = mean_gmrt1~., family="gaussian") %>% 
+  tbl_regression(
+    estimate_fun = function(x){style_ratio(x, digits = 3)}, # 设置显示小数点位数
+    pvalue_fun = function(x){style_pvalue(x, digits = 3)} # 设置小数点位数
+  ) %>%
+  add_global_p() %>% 
+  bold_p()
+
+# 显示结果
+linear_mv
+
+# 将两张表格结合
+tbl_merge(
+  list(linear_uv, linear_mv),
+  tab_spanner = c("**Univariable**", "**Multivariable**") # 调整回归分析名称
+) %>%
+modify_footnote( 
+  everything() ~ NA, # 移除表注
+  abbreviation = TRUE # 移除缩写的表注
+) %>%
+modify_header(
+    label ~ "**Variable**" # 调整变量栏名称
+  ) %>%  
+  modify_caption(
+    "**Linear regression results**" # 添加表题
+  )
+```
+
+#### 二分类的Logistic回归
+```{r chapter027-gtsummary-logreg, message=FALSE, warning=FALSE}
+# 单变量简单线性回归
+logreg_uv <- df_heart %>%
+  select(age,sex,chol,exang,target) %>%
+  tbl_uvregression(
+    method = glm, # 设置回归模型
+    y = target, # 设置因变量
+    method.args = list(family = binomial(link='logit')), # 设置glm参数
+    exponentiate = TRUE, # 将系数进行自然指数转换
+    estimate_fun = function(x){style_ratio(x, digits = 3)}, # 设置显示小数点位数
+    pvalue_fun = function(x){style_pvalue(x, digits = 3)}, # 设置小数点位数
+    hide_n = TRUE # 不显示计数
+  ) %>%
+  add_global_p() %>%
+  bold_p()
+
+# 显示结果
+logreg_uv
+
+# 多变量变量简单线性回归
+logreg_mv <- df_heart %>%
+  select(age,sex,chol,exang,target) %>%
+  glm(formula = target~., family=binomial(link='logit')) %>%
+  tbl_regression(
+    exponentiate = TRUE, # 将系数进行自然指数转换
+    estimate_fun = function(x){style_ratio(x, digits = 3)}, # 设置显示小数点位数
+    pvalue_fun = function(x){style_pvalue(x, digits = 3)} # 设置小数点位数
+  ) %>%
+  add_global_p() %>%
+  bold_p()
+
+# 显示结果
+logreg_mv
+
+# 将两张表格结合
+tbl_merge(
+  list(logreg_uv, logreg_mv),
+  tab_spanner = c("**Univariable**", "**Multivariable**") # 调整回归分析名称
+) %>%
+modify_footnote(
+  everything() ~ NA, # 移除表注
+  abbreviation = TRUE # 移除缩写的表注
+) %>%
+modify_header(
+    label ~ "**Variable**" # 调整变量栏名称
+  ) %>%
+  modify_caption(
+    "**Logistic regression results**" # 添加表题
+  )
+```

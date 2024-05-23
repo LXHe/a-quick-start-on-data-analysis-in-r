@@ -1,0 +1,92 @@
+---
+output:
+  # pdf_document: default
+  html_document: default
+---
+
+# 非参数回归模型
+## 概述
+我们之前的线性回归设定自变量与因变量（或者经过链接函数处理后的因变量）呈线性关系，所获得的系数$\beta$也是对应自变量与因变量的整体关联。但是，有时我们的自变量与因变量并非线性关系。
+
+我们可以考虑通过增加次方项（order）的方式增加模型的拟合度，此时我们有两个选择：（1）将次方项由小到大逐渐增加，直至新的次方项不显著；（2）将次方项由大到小逐渐减少，直至新的次方项显著。
+```{r chapter028-non-param-demo, message=FALSE, warning=FALSE, echo=FALSE, fig.height=12, fig.width=7}
+library(tidyverse)
+library(cowplot)
+
+set.seed(1)
+np_x <- runif(n=200)
+np_y <- np_x + 2*np_x**2 + 3*np_x**3 + sin(2*pi*np_x) + rnorm(200, mean=0, sd=0.4)
+df_np <- data.frame(x=np_x, y=np_y)
+
+p1 <- ggplot(data = df_np, aes(x,y)) +
+  geom_point(color="#459943", alpha=0.8, pch=16) +
+  geom_smooth(method="lm", se=FALSE, color="#f47720", size=0.8) +
+  labs(title = "一次方线性回归：y~x") + 
+  theme_classic() +
+  theme(plot.title = element_text(hjust=0.5, size=10))
+
+lm1 <- lm(formula=y~x, data=df_np)
+p2 <- ggplot() + 
+  geom_point(aes(df_np$x,lm1$residuals), color="#3f60aa", alpha=0.8, pch=16) +
+  labs(title = "一次方线性回归：残差分布", x="x", y="residual") + 
+  theme_classic() +
+  theme(plot.title = element_text(hjust=0.5, size=10)) 
+
+p3 <- ggplot(data = df_np, aes(x,y)) +
+  geom_point(color="#459943", alpha=0.8, pch=16) +
+  geom_smooth(method="lm", formula=y~x+I(x^2),se=FALSE, color="#f47720", size=0.8) +
+  labs(title = "平方线性回归：y~x+I(x^2)") + 
+  theme_classic() +
+  theme(plot.title = element_text(hjust=0.5, size=10))
+
+lm2 <- lm(formula=y~x+I(x^2), data=df_np)
+p4 <- ggplot() + 
+  geom_point(aes(df_np$x,lm2$residuals), color="#3f60aa", alpha=0.8, pch=16) +
+  labs(title = "平方线性回归：残差分布", x="x", y="residual") + 
+  theme_classic() +
+  theme(plot.title = element_text(hjust=0.5, size=10))
+
+p5 <- ggplot(data = df_np, aes(x,y)) +
+  geom_point(color="#459943", alpha=0.8, pch=16) +
+  geom_smooth(method="lm", formula=y~x+I(x^2)+I(x^3),se=FALSE, color="#f47720", size=0.8) +
+  labs(title = "立方线性回归：y~x+I(x^2)+I(x^3)") + 
+  theme_classic() +
+  theme(plot.title = element_text(hjust=0.5, size=10))
+
+lm3 <- lm(formula=y~x+I(x^2)+I(x^3), data=df_np)
+p6 <- ggplot() + 
+  geom_point(aes(df_np$x,lm3$residuals), color="#3f60aa", alpha=0.8, pch=16) +
+  labs(title = "立方线性回归：残差分布", x="x", y="residual") + 
+  theme_classic() +
+  theme(plot.title = element_text(hjust=0.5, size=10))
+
+p7 <- ggplot(data = df_np, aes(x,y)) +
+  geom_point(color="#459943", alpha=0.8, pch=16) +
+  geom_smooth(method="lm", formula=y~x+I(x^2)+I(x^3)+I(x^4),se=FALSE, color="#f47720", size=0.8) +
+  labs(title = "四次方线性回归：y~x+I(x^2)+I(x^3)+I(x^4)") + 
+  theme_classic() +
+  theme(plot.title = element_text(hjust=0.5, size=10))
+
+lm4 <- lm(formula=y~x+I(x^2)+I(x^3)+I(x^4), data=df_np)
+p8 <- ggplot() + 
+  geom_point(aes(df_np$x,lm4$residuals), color="#3f60aa", alpha=0.8, pch=16) +
+  labs(title = "四次方线性回归：残差分布", x="x", y="residual") + 
+  theme_classic() +
+  theme(plot.title = element_text(hjust=0.5, size=10))
+
+plot_grid(p1,p2,p3,p4,p5,p6,p7,p8, ncol=2)
+```
+
+我们看各模型的各项变量的显著性，可以发现在四次方项时的变量是不显著的，所以模型构建时只囊括到立方项。
+```{r chapter028-non-param-demo-2, message=FALSE, warning=FALSE, echo=FALSE}
+knitr::kable(round(coef(summary(lm1)),3))
+knitr::kable(round(coef(summary(lm2)),3))
+knitr::kable(round(coef(summary(lm3)),3))
+knitr::kable(round(coef(summary(lm4)),3))
+```
+
+## 核平滑回归
+核平滑回归（kernel smoother regression）
+
+## 样条平滑回归
+样条平滑回归（spline smoother regression）
